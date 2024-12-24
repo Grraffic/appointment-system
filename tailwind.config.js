@@ -15,6 +15,7 @@ export default {
         LBackground: "#152F6A",
         OBackground: "#0D1858",
         Footer: "#F3F3F3",
+        Gold: "#F3BC62",
       },
     },
   },
