@@ -10,14 +10,14 @@ const Carousel = () => {
       description:
         "To ensure efficient and orderly processing of document requests, the following regulations have been established for both Basic Education and Higher Education. Please be guided accordingly.",
     },
-    // {
-    //   title: "Second Page",
-    //   description: "This is the second page",
-    // },
-    // {
-    //   title: "Third Page",
-    //   description: "This is the third page",
-    // },
+    {
+      title: "Second Page",
+      description: "This is the second page",
+    },
+    {
+      title: "Third Page",
+      description: "This is the third page",
+    },
   ];
 
   const handlePrev = () => {
@@ -33,7 +33,7 @@ const Carousel = () => {
   };
 
   return (
-    <div className="relative w-full max-w-[1440px] h-screen mx-auto bg-[#2A3064] text-white p-6 flex flex-col items-center justify-center pt-10 font-lato">
+    <div className="relative w-full max-w-[1440px] h-[750px] mx-auto bg-[#2A3064] text-white p-6 flex flex-col items-center justify-center pt-10 font-lato">
       {/* Slide Content */}
       <div className="text-center max-w-[1000px] flex flex-col justify-center items-center h-screen">
         <h2 className="text-[36px] font-semibold w-[800px]">

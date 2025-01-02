@@ -37,14 +37,14 @@ const Announcement = () => {
     <>
       <div className="max-w-[1440px] mx-auto font-lato ">
         <div
-          className="relative w-full min-h-screen h-[1000px] bg-cover bg-center flex items-end justify-center text-white text-center pb-28"
+          className="relative w-full  h-[1000px] bg-cover bg-center flex items-end justify-center text-white text-center pb-28"
           style={{
             backgroundImage:
               "url('/src/assets/image/JPampangaBarangays0646dfvf_11.JPG')",
           }}
         >
           <div className="absolute inset-0 bg-custom-gradient_announcement z-10 pb-10"></div>
-          <section className="absolute left-20 text-start z-20">
+          <section className="absolute left-20 top-[450px] text-start z-20">
             <h1 className=" text-[60px]  tracking-widest font-bold w-[900px]">
               LA VERDAD CHRISTIAN COLLEGE
             </h1>
@@ -53,9 +53,6 @@ const Announcement = () => {
               Simplifying appointment scheduling. Stay organized, save time, and
               never miss an appointment. Easy, fast, and hassle-free
             </p>
-            <button className="bg-[#161F55] p-4 rounded-lg w-[240px] text-[20px]">
-              LEARN MORE
-            </button>
           </section>
         </div>
         <Buttons />
@@ -95,13 +92,14 @@ const Announcement = () => {
               style={{
                 backgroundImage:
                   "url('/src/assets/image/la_verdad_christian_school_apalit_pampanga_cover.jpeg')",
+                filter: "brightness(0.5)",
               }}
             >
               <div className="absolute inset-0 bg-[#0D1858] opacity-30"></div>
             </div>
 
             {/* Text Content */}
-            <div className="absolute inset-0 flex flex-col items-start justify-center max-w-[850px] pl-10 pt-[95px] z-10">
+            <div className="absolute inset-0 flex flex-col items-start justify-center max-w-[900px] pl-10 pt-[95px] z-10">
               <h1 className="text-[40px] font-bold text-center tracking-[5px]">
                 REGISTRAR OFFICE APPOINTMENT
               </h1>
