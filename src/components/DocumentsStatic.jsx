@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-const Documents = () => {
+import { useState } from "react";
+const DocumentsStatic = () => {
   const [openDropdowns, setOpenDropdowns] = useState([]);
 
   const dropdowns = [
@@ -59,7 +59,7 @@ const Documents = () => {
           main: "The TOR can be requested once for the following purposes:",
           subtopics: [
             "PRC Licensure Examination - must attach proof.",
-            "Employment - must attach proof..",
+            "Employment - must attach proof.",
             "Continuing studies - A request letter must be provided for processing.",
           ],
         },
@@ -88,9 +88,9 @@ const Documents = () => {
             <div key={dropdown.id} className="mb-8">
               <div
                 onClick={() => toggleDropdown(dropdown.id)}
-                className={`flex justify-between items-center text-3xl w-[900px] text-white p-4 border-[3px] cursor-pointer ${
+                className={`flex justify-between items-center text-3xl w-[900px]  p-4 border-[3px] cursor-pointer ${
                   openDropdowns.includes(dropdown.id)
-                    ? "bg-[#D9D9D9] text-[#0a1d8b90] font-LatoBold"
+                    ? "bg-[#D9D9D9] text-[#161f55] font-LatoBold"
                     : "hover:bg-white hover:text-black hover:font-LatoBold "
                 }`}
               >
@@ -138,4 +138,4 @@ const Documents = () => {
   );
 };
 
-export default Documents;
+export default DocumentsStatic;
