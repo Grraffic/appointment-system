@@ -3,9 +3,9 @@ import dayjs from "dayjs";
 import axios from "axios";
 
 const API_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.REACT_APP_API_URL || "http://localhost:5000/api";
 const API_URL_EVENTS =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+  import.meta.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 const useRegistrarHome = () => {
   const [currentDate, setCurrentDate] = useState(dayjs());
@@ -161,25 +161,25 @@ const useRegistrarHome = () => {
     }
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isSidebarOpen]);
-const [stats, setStats] = useState({
-  APPROVED: 0,
-  PENDING: 0,
-  COMPLETED: 0,
-  REJECTED: 0,
-  total: 0,
-  morning: {
+  const [stats, setStats] = useState({
     APPROVED: 0,
     PENDING: 0,
     COMPLETED: 0,
     REJECTED: 0,
-  },
-  afternoon: {
-    APPROVED: 0,
-    PENDING: 0,
-    COMPLETED: 0,
-    REJECTED: 0,
-  },
-});
+    total: 0,
+    morning: {
+      APPROVED: 0,
+      PENDING: 0,
+      COMPLETED: 0,
+      REJECTED: 0,
+    },
+    afternoon: {
+      APPROVED: 0,
+      PENDING: 0,
+      COMPLETED: 0,
+      REJECTED: 0,
+    },
+  });
 
   // Add this effect to fetch stats
   useEffect(() => {

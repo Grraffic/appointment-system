@@ -5,13 +5,14 @@ import useStudents from "./hooks/useStudents";
 import { FaSearch } from "react-icons/fa";
 
 const Students = () => {
-  const API_URL = "/api/document-requests/docs-with-details";
-  
+  const API_URL =
+    "https://appointment-system-backend-n8dk.onrender.com/api/document-requests/docs-with-details";
+
   const {
     // Data states
     loading,
     error,
-    
+
     // Pagination states
     currentPage,
     entriesPerPage,
@@ -20,20 +21,20 @@ const Students = () => {
     startEntry,
     endEntry,
     pageNumbers,
-    
+
     // Filtered data
     filteredAppointments,
-    
+
     // Handlers
     handleSearchChange,
     handleEntriesPerPageChange,
     handleNextPage,
     handlePreviousPage,
     handlePageChange,
-    
+
     // Search state
     searchTerm,
-    
+
     // Sidebar states and handlers
     isSidebarOpen,
     toggleSidebar,
@@ -94,13 +95,20 @@ const Students = () => {
               </div>
             </div>
 
-            <table className="text-[15px] w-[97%] border-collapse text-[#161F55] mt-8 mx-auto" style={{ tableLayout: "fixed" }}>
+            <table
+              className="text-[15px] w-[97%] border-collapse text-[#161F55] mt-8 mx-auto"
+              style={{ tableLayout: "fixed" }}
+            >
               <thead>
                 <tr className="bg-gray-200 text-center">
                   <th className="border p-5">TRANSACTION NO.</th>
                   <th className="border p-5">NAME</th>
                   <th className="border p-5">LAST S.Y. ATTENDED</th>
-                  <th className="border p-5">PROGRAM/GRADE/<br/>STRAND</th>
+                  <th className="border p-5">
+                    PROGRAM/GRADE/
+                    <br />
+                    STRAND
+                  </th>
                   <th className="border p-5">CONTACT NO.</th>
                   <th className="border p-5">EMAIL ADDRESS</th>
                   <th className="border p-5">ATTACHMENT PROOF</th>
@@ -126,18 +134,25 @@ const Students = () => {
                 {!loading && !error && filteredAppointments.length === 0 && (
                   <tr>
                     <td colSpan="9" className="text-center p-5">
-                      {searchTerm ? "No matching records found." : "No student records found."}
+                      {searchTerm
+                        ? "No matching records found."
+                        : "No student records found."}
                     </td>
                   </tr>
                 )}
                 {!loading &&
                   !error &&
                   filteredAppointments
-                    .slice((currentPage - 1) * entriesPerPage, currentPage * entriesPerPage)
+                    .slice(
+                      (currentPage - 1) * entriesPerPage,
+                      currentPage * entriesPerPage
+                    )
                     .map((data, index) => (
                       <tr
                         key={data.transactionNumber || index}
-                        className={`${index % 2 === 0 ? "bg-gray-100" : ""} text-center`}
+                        className={`${
+                          index % 2 === 0 ? "bg-gray-100" : ""
+                        } text-center`}
                       >
                         <td className="border p-5 text-[#354CCE] font-bold">
                           {data.transactionNumber}
@@ -148,20 +163,27 @@ const Students = () => {
                         <td className="border p-5">{data.contact}</td>
                         <td className="border p-5">{data.email}</td>
                         <td className="border p-5">
-                          {data.attachment && data.attachment !== 'No attachments' ? (
+                          {data.attachment &&
+                          data.attachment !== "No attachments" ? (
                             <div className="flex flex-col gap-1">
-                              {data.attachment.split(", ").map((filename, index) => (
-                                <span 
-                                  key={index} 
-                                  className="text-blue-600 hover:underline cursor-pointer text-sm"
-                                  title={filename}
-                                >
-                                  {filename.length > 30 ? `${filename.substring(0, 30)}...` : filename}
-                                </span>
-                              ))}
+                              {data.attachment
+                                .split(", ")
+                                .map((filename, index) => (
+                                  <span
+                                    key={index}
+                                    className="text-blue-600 hover:underline cursor-pointer text-sm"
+                                    title={filename}
+                                  >
+                                    {filename.length > 30
+                                      ? `${filename.substring(0, 30)}...`
+                                      : filename}
+                                  </span>
+                                ))}
                             </div>
                           ) : (
-                            <span className="text-gray-500 text-sm">No attachments</span>
+                            <span className="text-gray-500 text-sm">
+                              No attachments
+                            </span>
                           )}
                         </td>
                         <td className="border p-5">{data.request}</td>
@@ -176,7 +198,8 @@ const Students = () => {
             {calculatedTotalPages > 0 && (
               <div className="flex justify-between items-center mt-10 text-[18px] px-4 mx-auto w-[97%]">
                 <span className="text-[#161F55]">
-                  SHOWING {startEntry} TO {endEntry} OF {totalFilteredEntries} ENTRIES
+                  SHOWING {startEntry} TO {endEntry} OF {totalFilteredEntries}{" "}
+                  ENTRIES
                 </span>
                 {calculatedTotalPages > 1 && (
                   <div className="flex items-center">
