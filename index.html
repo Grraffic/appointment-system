@@ -1,38 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/assets/image/LV_logo.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LVAppointEase</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="/assets/image/LV_logo.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LVAppointEase</title>
-  <!-- SPA Routing Handler Script -->
-  <script type="text/javascript">
-    // This script checks if we're being redirected from the 404.html page
-    // and handles the redirect to the correct route
-    (function() {
-      // Parse the URL parameters
-      var params = {};
-      var queryString = window.location.search.substring(1);
-      var pairs = queryString.split('&');
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i].split('=');
-        params[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
-      }
+    <!-- Facebook SDK -->
+    <div id="fb-root"></div>
+    <script
+      async
+      defer
+      crossorigin="anonymous"
+      src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v18.0"
+    ></script>
 
-      // If we have a path parameter, use it to navigate
-      if (params.path) {
-        var path = params.path;
-        // Remove the path parameter from the URL
-        window.history.replaceState(null, null, path);
-      }
-    })();
-  </script>
-</head>
+    <!-- SPA Routing Handler Script -->
+    <script type="text/javascript">
+      // This script checks if we're being redirected from the 404.html page
+      // and handles the redirect to the correct route
+      (function () {
+        // Parse the URL parameters
+        var params = {};
+        var queryString = window.location.search.substring(1);
+        var pairs = queryString.split("&");
+        for (var i = 0; i < pairs.length; i++) {
+          var pair = pairs[i].split("=");
+          params[decodeURIComponent(pair[0])] = decodeURIComponent(
+            pair[1] || ""
+          );
+        }
 
-<body>
-  <div id="root"></div>
-  <script type="module" src="/src/main.jsx"></script>
-</body>
+        // If we have a path parameter, use it to navigate
+        if (params.path) {
+          var path = params.path;
+          // Remove the path parameter from the URL
+          window.history.replaceState(null, null, path);
+        }
+      })();
+    </script>
+  </head>
 
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
 </html>
