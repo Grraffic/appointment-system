@@ -190,6 +190,15 @@ const useAppointment = () => {
   const updateAppointmentStatus = async (appointment, newStatus) => {
     try {
       console.log("Updating status:", { appointment, newStatus }); // Debug log
+
+      // Ensure we have the correct timeSlot information
+      const timeSlotToSend =
+        appointment.timeSlot && appointment.timeSlot !== "Not scheduled"
+          ? appointment.timeSlot
+          : "Not scheduled";
+
+      console.log("Sending timeSlot:", timeSlotToSend); // Debug log
+
       const response = await fetch(
         `https://appointment-system-backend-n8dk.onrender.com/api/status/status/${appointment.transactionNumber}`,
         {
@@ -202,14 +211,16 @@ const useAppointment = () => {
             emailAddress: appointment.emailAddress, // Make sure this is included
             name: appointment.name, // Make sure this is included
             appointmentDate: appointment.dateOfAppointment,
-            timeSlot: appointment.timeSlot,
+            timeSlot: timeSlotToSend,
           }),
         }
       );
-      console.log("Response:", await response.clone().json()); // Debug log
+
+      const responseData = await response.json();
+      console.log("Response:", responseData); // Debug log
 
       if (!response.ok) {
-        throw new Error("Failed to update status");
+        throw new Error(responseData.message || "Failed to update status");
       }
 
       // Update the local state
@@ -219,6 +230,11 @@ const useAppointment = () => {
             ? { ...appt, status: newStatus }
             : appt
         )
+      );
+
+      console.log(
+        "Status updated successfully for:",
+        appointment.transactionNumber
       );
     } catch (error) {
       console.error("Error updating status:", error);
