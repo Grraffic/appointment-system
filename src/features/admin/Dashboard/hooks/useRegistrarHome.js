@@ -3,8 +3,7 @@ import dayjs from "dayjs";
 import axios from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const API_URL_EVENTS =
-  import.meta.env.VITE_API_URL;
+const API_URL_EVENTS = import.meta.env.VITE_API_URL;
 
 const useRegistrarHome = () => {
   const [currentDate, setCurrentDate] = useState(dayjs());
@@ -186,8 +185,7 @@ const useRegistrarHome = () => {
       console.log("Fetching appointment data to calculate stats...");
 
       // Fetch appointments data directly (same as the appointments page does)
-      const API_BASE_URL =
-       `${import.meta.env.VITE_API_URL}/api`;
+      const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
 
       // Get all appointment statuses
       const statusResponse = await axios.get(`${API_BASE_URL}/status`);
@@ -210,25 +208,14 @@ const useRegistrarHome = () => {
         return acc;
       }, {});
 
-      // Initialize stats
+      // Initialize stats with dynamic time slots
       const calculatedStats = {
         APPROVED: 0,
         PENDING: 0,
         COMPLETED: 0,
         REJECTED: 0,
         total: 0,
-        morning: {
-          APPROVED: 0,
-          PENDING: 0,
-          COMPLETED: 0,
-          REJECTED: 0,
-        },
-        afternoon: {
-          APPROVED: 0,
-          PENDING: 0,
-          COMPLETED: 0,
-          REJECTED: 0,
-        },
+        timeSlots: {}, // Dynamic object to store time slot breakdowns
       };
 
       // ENHANCED DEDUPLICATION: Remove duplicates by email address and prefer TR format
@@ -308,37 +295,27 @@ const useRegistrarHome = () => {
 
           console.log(`  TimeSlot found: "${timeSlot}"`);
 
-          // Determine if it's morning or afternoon
-          const timeSlotUpper = timeSlot.toUpperCase();
-          const isAM =
-            timeSlotUpper.includes("AM") ||
-            timeSlotUpper.includes("MORNING") ||
-            timeSlotUpper.includes("8:") ||
-            timeSlotUpper.includes("9:") ||
-            timeSlotUpper.includes("10:") ||
-            timeSlotUpper.includes("11:");
-          const isPM =
-            timeSlotUpper.includes("PM") ||
-            timeSlotUpper.includes("AFTERNOON") ||
-            timeSlotUpper.includes("1:") ||
-            timeSlotUpper.includes("2:") ||
-            timeSlotUpper.includes("3:") ||
-            timeSlotUpper.includes("4:") ||
-            timeSlotUpper.includes("5:");
+          // Group by actual time slot that user selected
+          const actualTimeSlot = timeSlot || "No time specified";
 
-          if (isAM) {
-            calculatedStats.morning[statusType]++;
-            console.log(`  -> Added to MORNING ${statusType}`);
-          } else if (isPM) {
-            calculatedStats.afternoon[statusType]++;
-            console.log(`  -> Added to AFTERNOON ${statusType}`);
-          } else {
-            // Default fallback - if no time info, distribute evenly or assign to morning
-            calculatedStats.morning[statusType]++;
-            console.log(
-              `  -> No time info, defaulted to MORNING ${statusType}`
-            );
+          // Initialize time slot object if it doesn't exist
+          if (!calculatedStats.timeSlots[actualTimeSlot]) {
+            calculatedStats.timeSlots[actualTimeSlot] = {
+              APPROVED: 0,
+              PENDING: 0,
+              COMPLETED: 0,
+              REJECTED: 0,
+              total: 0,
+            };
           }
+
+          // Add to the specific time slot
+          calculatedStats.timeSlots[actualTimeSlot][statusType]++;
+          calculatedStats.timeSlots[actualTimeSlot].total++;
+
+          console.log(
+            `  -> Added to time slot "${actualTimeSlot}" for ${statusType}`
+          );
         }
       });
 

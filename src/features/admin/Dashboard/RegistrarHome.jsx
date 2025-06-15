@@ -76,25 +76,33 @@ const RegistrarHome = () => {
                       <h3 className="text-[#299057] text-xl font-semibold">
                         Approved
                       </h3>
-                      <div className="mt-2 text-sm">
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#299057] text-[16px] opacity-50">
-                            ●
-                          </span>{" "}
-                          Morning{" "}
-                          <span className="ml-4 font-LatoBold">
-                            {stats.morning?.APPROVED || 0}
-                          </span>
-                        </p>
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#299057] text-[16px] opacity-50">
-                            ●
-                          </span>{" "}
-                          Afternoon{" "}
-                          <span className="ml-2 font-LatoBold">
-                            {stats.afternoon?.APPROVED || 0}
-                          </span>
-                        </p>
+                      <div className="mt-2 text-sm max-h-20 overflow-y-auto">
+                        {stats.timeSlots &&
+                        Object.keys(stats.timeSlots).length > 0 ? (
+                          Object.entries(stats.timeSlots).map(
+                            ([timeSlot, counts]) => (
+                              <p
+                                key={timeSlot}
+                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                              >
+                                <span className="text-[#299057] text-[12px] opacity-50">
+                                  ●
+                                </span>{" "}
+                                <span className="text-[10px]">{timeSlot}</span>{" "}
+                                <span className="ml-2 font-LatoBold text-[12px]">
+                                  {counts.APPROVED || 0}
+                                </span>
+                              </p>
+                            )
+                          )
+                        ) : (
+                          <p className="text-[#000] text-[11px] font-LatoRegular">
+                            <span className="text-[#299057] text-[12px] opacity-50">
+                              ●
+                            </span>{" "}
+                            No appointments yet
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -112,21 +120,33 @@ const RegistrarHome = () => {
                       <h3 className="text-[#A0A112] text-xl font-semibold">
                         Pendings
                       </h3>
-                      <div className="mt-2 text-sm">
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#E5E68B] text-[16px] ">●</span>{" "}
-                          Morning{" "}
-                          <span className="ml-4 font-LatoBold">
-                            {stats.morning?.PENDING || 0}
-                          </span>
-                        </p>
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#E5E68B] text-[16px] ">●</span>{" "}
-                          Afternoon{" "}
-                          <span className="ml-2 font-LatoBold">
-                            {stats.afternoon?.PENDING || 0}
-                          </span>
-                        </p>
+                      <div className="mt-2 text-sm max-h-20 overflow-y-auto">
+                        {stats.timeSlots &&
+                        Object.keys(stats.timeSlots).length > 0 ? (
+                          Object.entries(stats.timeSlots).map(
+                            ([timeSlot, counts]) => (
+                              <p
+                                key={timeSlot}
+                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                              >
+                                <span className="text-[#E5E68B] text-[12px]">
+                                  ●
+                                </span>{" "}
+                                <span className="text-[10px]">{timeSlot}</span>{" "}
+                                <span className="ml-2 font-LatoBold text-[12px]">
+                                  {counts.PENDING || 0}
+                                </span>
+                              </p>
+                            )
+                          )
+                        ) : (
+                          <p className="text-[#000] text-[11px] font-LatoRegular">
+                            <span className="text-[#E5E68B] text-[12px]">
+                              ●
+                            </span>{" "}
+                            No appointments yet
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -144,21 +164,33 @@ const RegistrarHome = () => {
                       <h3 className="text-[#354CCE] text-xl font-semibold">
                         Completed
                       </h3>
-                      <div className="mt-2 text-sm">
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#354CCE] text-[16px] ">●</span>{" "}
-                          Morning{" "}
-                          <span className="ml-4 font-LatoBold">
-                            {stats.morning?.COMPLETED || 0}
-                          </span>
-                        </p>
-                        <p className="text-[#000] text-[13px] font-LatoRegular">
-                          <span className="text-[#354CCE] text-[16px] ">●</span>{" "}
-                          Afternoon{" "}
-                          <span className="ml-2 font-LatoBold">
-                            {stats.afternoon?.COMPLETED || 0}
-                          </span>
-                        </p>
+                      <div className="mt-2 text-sm max-h-20 overflow-y-auto">
+                        {stats.timeSlots &&
+                        Object.keys(stats.timeSlots).length > 0 ? (
+                          Object.entries(stats.timeSlots).map(
+                            ([timeSlot, counts]) => (
+                              <p
+                                key={timeSlot}
+                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                              >
+                                <span className="text-[#354CCE] text-[12px]">
+                                  ●
+                                </span>{" "}
+                                <span className="text-[10px]">{timeSlot}</span>{" "}
+                                <span className="ml-2 font-LatoBold text-[12px]">
+                                  {counts.COMPLETED || 0}
+                                </span>
+                              </p>
+                            )
+                          )
+                        ) : (
+                          <p className="text-[#000] text-[11px] font-LatoRegular">
+                            <span className="text-[#354CCE] text-[12px]">
+                              ●
+                            </span>{" "}
+                            No appointments yet
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>

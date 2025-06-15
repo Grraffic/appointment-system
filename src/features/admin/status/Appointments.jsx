@@ -21,17 +21,11 @@ const Appointments = () => {
     });
   };
 
-  // Helper function to format time slot
+  // Helper function to format time slot - now displays actual dynamic time slots
   const formatTimeSlot = (timeSlot) => {
     if (!timeSlot) return "";
-
-    const timeSlotMap = {
-      MORNING: "8am-11am",
-      AFTERNOON: "1pm-4pm",
-      EVENING: "4pm-7pm",
-    };
-
-    return timeSlotMap[timeSlot.toUpperCase()] || timeSlot;
+    // Return the actual time slot as stored (e.g., "8:00 AM - 11:00 AM")
+    return timeSlot;
   };
 
   // Custom CSS for tooltips on truncated table data
