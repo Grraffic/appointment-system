@@ -79,22 +79,38 @@ const RegistrarHome = () => {
                       <div className="mt-2 text-sm max-h-20 overflow-y-auto">
                         {stats.timeSlots &&
                         Object.keys(stats.timeSlots).length > 0 ? (
-                          Object.entries(stats.timeSlots).map(
-                            ([timeSlot, counts]) => (
-                              <p
-                                key={timeSlot}
-                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
-                              >
-                                <span className="text-[#299057] text-[12px] opacity-50">
-                                  ●
-                                </span>{" "}
-                                <span className="text-[10px]">{timeSlot}</span>{" "}
-                                <span className="ml-2 font-LatoBold text-[12px]">
-                                  {counts.APPROVED || 0}
-                                </span>
-                              </p>
+                          Object.entries(stats.timeSlots)
+                            .filter(
+                              ([timeSlot]) =>
+                                timeSlot.toLowerCase() !== "not scheduled"
                             )
-                          )
+                            .map(([timeSlot, counts]) => {
+                              // Convert time slot to Morning/Afternoon
+                              const displayTimeSlot =
+                                timeSlot.toLowerCase().includes("am") ||
+                                timeSlot.includes("8:") ||
+                                timeSlot.includes("9:") ||
+                                timeSlot.includes("10:") ||
+                                timeSlot.includes("11:")
+                                  ? "Morning"
+                                  : "Afternoon";
+                              return (
+                                <p
+                                  key={timeSlot}
+                                  className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                                >
+                                  <span className="text-[#299057] text-[12px] opacity-50">
+                                    ●
+                                  </span>{" "}
+                                  <span className="text-[10px]">
+                                    {displayTimeSlot}
+                                  </span>{" "}
+                                  <span className="ml-2 font-LatoBold text-[12px]">
+                                    {counts.APPROVED || 0}
+                                  </span>
+                                </p>
+                              );
+                            })
                         ) : (
                           <p className="text-[#000] text-[11px] font-LatoRegular">
                             <span className="text-[#299057] text-[12px] opacity-50">
@@ -123,22 +139,38 @@ const RegistrarHome = () => {
                       <div className="mt-2 text-sm max-h-20 overflow-y-auto">
                         {stats.timeSlots &&
                         Object.keys(stats.timeSlots).length > 0 ? (
-                          Object.entries(stats.timeSlots).map(
-                            ([timeSlot, counts]) => (
-                              <p
-                                key={timeSlot}
-                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
-                              >
-                                <span className="text-[#E5E68B] text-[12px]">
-                                  ●
-                                </span>{" "}
-                                <span className="text-[10px]">{timeSlot}</span>{" "}
-                                <span className="ml-2 font-LatoBold text-[12px]">
-                                  {counts.PENDING || 0}
-                                </span>
-                              </p>
+                          Object.entries(stats.timeSlots)
+                            .filter(
+                              ([timeSlot]) =>
+                                timeSlot.toLowerCase() !== "not scheduled"
                             )
-                          )
+                            .map(([timeSlot, counts]) => {
+                              // Convert time slot to Morning/Afternoon
+                              const displayTimeSlot =
+                                timeSlot.toLowerCase().includes("am") ||
+                                timeSlot.includes("8:") ||
+                                timeSlot.includes("9:") ||
+                                timeSlot.includes("10:") ||
+                                timeSlot.includes("11:")
+                                  ? "Morning"
+                                  : "Afternoon";
+                              return (
+                                <p
+                                  key={timeSlot}
+                                  className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                                >
+                                  <span className="text-[#E5E68B] text-[12px]">
+                                    ●
+                                  </span>{" "}
+                                  <span className="text-[10px]">
+                                    {displayTimeSlot}
+                                  </span>{" "}
+                                  <span className="ml-2 font-LatoBold text-[12px]">
+                                    {counts.PENDING || 0}
+                                  </span>
+                                </p>
+                              );
+                            })
                         ) : (
                           <p className="text-[#000] text-[11px] font-LatoRegular">
                             <span className="text-[#E5E68B] text-[12px]">
@@ -167,22 +199,38 @@ const RegistrarHome = () => {
                       <div className="mt-2 text-sm max-h-20 overflow-y-auto">
                         {stats.timeSlots &&
                         Object.keys(stats.timeSlots).length > 0 ? (
-                          Object.entries(stats.timeSlots).map(
-                            ([timeSlot, counts]) => (
-                              <p
-                                key={timeSlot}
-                                className="text-[#000] text-[11px] font-LatoRegular mb-1"
-                              >
-                                <span className="text-[#354CCE] text-[12px]">
-                                  ●
-                                </span>{" "}
-                                <span className="text-[10px]">{timeSlot}</span>{" "}
-                                <span className="ml-2 font-LatoBold text-[12px]">
-                                  {counts.COMPLETED || 0}
-                                </span>
-                              </p>
+                          Object.entries(stats.timeSlots)
+                            .filter(
+                              ([timeSlot]) =>
+                                timeSlot.toLowerCase() !== "not scheduled"
                             )
-                          )
+                            .map(([timeSlot, counts]) => {
+                              // Convert time slot to Morning/Afternoon
+                              const displayTimeSlot =
+                                timeSlot.toLowerCase().includes("am") ||
+                                timeSlot.includes("8:") ||
+                                timeSlot.includes("9:") ||
+                                timeSlot.includes("10:") ||
+                                timeSlot.includes("11:")
+                                  ? "Morning"
+                                  : "Afternoon";
+                              return (
+                                <p
+                                  key={timeSlot}
+                                  className="text-[#000] text-[11px] font-LatoRegular mb-1"
+                                >
+                                  <span className="text-[#354CCE] text-[12px]">
+                                    ●
+                                  </span>{" "}
+                                  <span className="text-[10px]">
+                                    {displayTimeSlot}
+                                  </span>{" "}
+                                  <span className="ml-2 font-LatoBold text-[12px]">
+                                    {counts.COMPLETED || 0}
+                                  </span>
+                                </p>
+                              );
+                            })
                         ) : (
                           <p className="text-[#000] text-[11px] font-LatoRegular">
                             <span className="text-[#354CCE] text-[12px]">
