@@ -8,24 +8,33 @@ import useHolidays from "./hooks/useHolidays";
 import { FaSearch } from "react-icons/fa";
 
 const formatDateToYyyyMmDd = (dateString) => {
-  if (!dateString || typeof dateString !== 'string') {
+  if (!dateString || typeof dateString !== "string") {
     return "";
   }
   try {
-    const parts = dateString.split('-');
+    const parts = dateString.split("-");
     if (parts.length === 3) {
       const [year, month, day] = parts;
-      if (year.length === 4 && month.length === 2 && day.length === 2 && !isNaN(parseInt(year)) && !isNaN(parseInt(month)) && !isNaN(parseInt(day))) {
+      if (
+        year.length === 4 &&
+        month.length === 2 &&
+        day.length === 2 &&
+        !isNaN(parseInt(year)) &&
+        !isNaN(parseInt(month)) &&
+        !isNaN(parseInt(day))
+      ) {
         return `${year}/${month}/${day}`;
       }
     }
-    const dateObj = new Date(dateString.includes('T') ? dateString : dateString + 'T00:00:00');
+    const dateObj = new Date(
+      dateString.includes("T") ? dateString : dateString + "T00:00:00"
+    );
     if (isNaN(dateObj.getTime())) {
       return "Invalid Date";
     }
     const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-    const day = String(dateObj.getDate()).padStart(2, '0');
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
     return `${year}/${month}/${day}`;
   } catch (e) {
     console.error("Error formatting date:", e, "Input:", dateString);
@@ -41,6 +50,9 @@ const Holidays = () => {
     isDeleteModalOpen,
     newHoliday,
     holidays,
+    fieldErrors,
+    addModalError,
+    editModalError,
     toggleSidebar,
     openAddModal,
     closeAddModal,
@@ -64,7 +76,8 @@ const Holidays = () => {
     handleEntriesPerPageChange,
   } = useHolidays();
 
-  const startEntry = totalFilteredEntries > 0 ? (currentPage - 1) * entriesPerPage + 1 : 0;
+  const startEntry =
+    totalFilteredEntries > 0 ? (currentPage - 1) * entriesPerPage + 1 : 0;
   const endEntry = Math.min(currentPage * entriesPerPage, totalFilteredEntries);
 
   const pageNumbers = [];
@@ -73,7 +86,6 @@ const Holidays = () => {
       pageNumbers.push(i);
     }
   }
-
 
   return (
     <div className="flex h-screen font-LatoRegular">
@@ -156,11 +168,19 @@ const Holidays = () => {
                   holidays.map((holiday, index) => (
                     <tr
                       key={holiday.id}
-                      className={`${index % 2 === 0 ? "bg-gray-100" : ""} text-center`}
+                      className={`${
+                        index % 2 === 0 ? "bg-gray-100" : ""
+                      } text-center`}
                     >
-                      <td className="border p-5">{(currentPage - 1) * entriesPerPage + index + 1}</td>
-                      <td className="border p-5">{formatDateToYyyyMmDd(holiday.date)}</td>
-                      <td className="border p-5 text-center">{holiday.description}</td>
+                      <td className="border p-5">
+                        {(currentPage - 1) * entriesPerPage + index + 1}
+                      </td>
+                      <td className="border p-5">
+                        {formatDateToYyyyMmDd(holiday.date)}
+                      </td>
+                      <td className="border p-5 text-center">
+                        {holiday.description}
+                      </td>
                       <td className="border p-5">
                         <div className="flex gap-2 justify-center">
                           <div
@@ -186,7 +206,9 @@ const Holidays = () => {
                 ) : (
                   <tr>
                     <td colSpan="4" className="text-center p-10 text-gray-500">
-                      {searchTerm ? "No holidays match your search." : "No holidays to display."}
+                      {searchTerm
+                        ? "No holidays match your search."
+                        : "No holidays to display."}
                     </td>
                   </tr>
                 )}
@@ -196,7 +218,8 @@ const Holidays = () => {
             {calculatedTotalPages > 0 && (
               <div className="flex justify-between items-center mt-10 text-[18px] px-4 mx-auto w-[97%]">
                 <span className="text-[#161F55]">
-                  SHOWING {startEntry} TO {endEntry} OF {totalFilteredEntries} ENTRIES
+                  SHOWING {startEntry} TO {endEntry} OF {totalFilteredEntries}{" "}
+                  ENTRIES
                 </span>
                 {calculatedTotalPages > 1 && (
                   <div className="flex items-center">
@@ -211,10 +234,11 @@ const Holidays = () => {
                       <button
                         key={number}
                         onClick={() => handlePageChange(number)}
-                        className={`border-t border-b px-3 py-1 ${currentPage === number
-                          ? "bg-[#161F55] text-white"
-                          : "text-[#161F55] hover:bg-gray-100"
-                          }`}
+                        className={`border-t border-b px-3 py-1 ${
+                          currentPage === number
+                            ? "bg-[#161F55] text-white"
+                            : "text-[#161F55] hover:bg-gray-100"
+                        }`}
                       >
                         {number}
                       </button>
@@ -241,16 +265,22 @@ const Holidays = () => {
             <h2 className="text-xl font-bold mb-4 uppercase">Add Holiday</h2>
             <div className="border-b-2 border-[#F3BC62] w-full max-w-xs my-2"></div>
             <div className="w-full">
-              <label htmlFor="add-date" className="block mb-1">DATE</label>
+              <label htmlFor="add-date" className="block mb-1">
+                DATE
+              </label>
               <input
                 id="add-date"
                 name="date"
                 type="date"
                 value={newHoliday.date}
                 onChange={handleInputChange}
-                className="border w-full p-2 mb-2"
+                className={`border w-full p-2 mb-2 ${
+                  fieldErrors.date ? "border-red-500" : ""
+                }`}
               />
-              <label htmlFor="add-description" className="block mb-1">DESCRIPTION</label>
+              <label htmlFor="add-description" className="block mb-1">
+                DESCRIPTION
+              </label>
               <input
                 id="add-description"
                 name="description"
@@ -258,12 +288,20 @@ const Holidays = () => {
                 value={newHoliday.description}
                 onChange={handleInputChange}
                 placeholder="Description"
-                className="border w-full p-2 mb-4"
+                className={`border w-full p-2 mb-4 ${
+                  fieldErrors.description ? "border-red-500" : ""
+                }`}
               />
             </div>
-            <div className="flex flex-col sm:flex-row justify-between gap-4 mt-6">
+            {/* Placeholder for error message to prevent button movement */}
+            <div className="mt-4 h-6 text-center">
+              {addModalError && (
+                <p className="text-red-500 text-sm">{addModalError}</p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
               <button
-                className=" bg-gray-300 text-black px-8 py-2 rounded-2xl w-full sm:w-auto"
+                className="bg-gray-300 text-black px-8 py-2 rounded-2xl w-full sm:w-auto"
                 onClick={closeAddModal}
               >
                 Cancel
@@ -284,16 +322,22 @@ const Holidays = () => {
             <h2 className="text-xl font-bold mb-4 uppercase">Update Holiday</h2>
             <div className="border-b-2 border-[#F3BC62] w-full max-w-xs my-2"></div>
             <div className="w-full">
-              <label htmlFor="edit-date" className="block mb-1">Date</label>
+              <label htmlFor="edit-date" className="block mb-1">
+                Date
+              </label>
               <input
                 id="edit-date"
                 name="date"
                 type="date"
                 value={newHoliday.date}
                 onChange={handleInputChange}
-                className="border w-full p-2 mb-2"
+                className={`border w-full p-2 mb-2 ${
+                  fieldErrors.date ? "border-red-500" : ""
+                }`}
               />
-              <label htmlFor="edit-description" className="block mb-1">Description</label>
+              <label htmlFor="edit-description" className="block mb-1">
+                Description
+              </label>
               <input
                 id="edit-description"
                 name="description"
@@ -301,10 +345,18 @@ const Holidays = () => {
                 value={newHoliday.description}
                 onChange={handleInputChange}
                 placeholder="Description"
-                className="border w-full p-2 mb-4"
+                className={`border w-full p-2 mb-4 ${
+                  fieldErrors.description ? "border-red-500" : ""
+                }`}
               />
             </div>
-            <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-10 mt-6">
+            {/* Placeholder for error message to prevent button movement */}
+            <div className="mt-4 h-6 text-center">
+              {editModalError && (
+                <p className="text-red-500 text-sm">{editModalError}</p>
+              )}
+            </div>
+            <div className="flex flex-col sm:flex-row justify-end gap-4 mt-6">
               <button
                 className="bg-gray-300 text-black px-8 py-2 rounded-2xl w-full sm:w-auto"
                 onClick={closeEditModal}
@@ -327,7 +379,7 @@ const Holidays = () => {
             <h2 className="text-lg font-bold mb-4">
               Are you sure you want to delete this Holiday?
             </h2>
-            <div className="flex flex-col sm:flex-row justify-center mt-8 gap-4 sm:gap-10">
+            <div className="flex flex-col sm:flex-row justify-end mt-8 gap-4">
               <button
                 className="bg-[#C9C9C9] text-[#161F55] px-6 py-1 rounded-[20px] w-full sm:w-auto"
                 onClick={closeDeleteModal}
@@ -335,7 +387,7 @@ const Holidays = () => {
                 No
               </button>
               <button
-                className="bg-[#161F55] text-white px-6 py-1  rounded-[20px] w-full sm:w-auto"
+                className="bg-[#161F55] text-white px-6 py-1 rounded-[20px] w-full sm:w-auto"
                 onClick={confirmDelete}
               >
                 Yes

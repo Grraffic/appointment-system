@@ -23,6 +23,9 @@ const useHolidays = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [entriesPerPage, setEntriesPerPage] = useState(10);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [addModalError, setAddModalError] = useState("");
+  const [editModalError, setEditModalError] = useState("");
 
   // Fetching all holidays
   const fetchAllHolidaysFromAPI = useCallback(async () => {
@@ -148,9 +151,16 @@ const useHolidays = () => {
   const openAddModal = () => {
     setNewHoliday(initialHolidayState);
     setEditingHolidayId(null);
+    setFieldErrors({});
+    setAddModalError("");
     setIsAddModalOpen(true);
   };
-  const closeAddModal = () => setIsAddModalOpen(false);
+  const closeAddModal = () => {
+    setNewHoliday(initialHolidayState);
+    setFieldErrors({});
+    setAddModalError("");
+    setIsAddModalOpen(false);
+  };
 
   const openEditModal = (holidayToEdit) => {
     setNewHoliday({
@@ -158,12 +168,16 @@ const useHolidays = () => {
       description: holidayToEdit.description,
     });
     setEditingHolidayId(holidayToEdit.id);
+    setFieldErrors({});
+    setEditModalError("");
     setIsEditModalOpen(true);
   };
   const closeEditModal = () => {
     setIsEditModalOpen(false);
     setEditingHolidayId(null);
     setNewHoliday(initialHolidayState);
+    setFieldErrors({});
+    setEditModalError("");
   };
 
   const openDeleteModal = (holidayId) => {
@@ -178,14 +192,29 @@ const useHolidays = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewHoliday((prev) => ({ ...prev, [name]: value }));
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+    // Clear modal errors when user starts typing
+    if (addModalError) setAddModalError("");
+    if (editModalError) setEditModalError("");
   };
 
   // CRUD functions - fetchAllHolidaysFromAPI is called after success
   const addHolidays = async () => {
-    if (!newHoliday.date || !newHoliday.description) {
-      alert("Date and Description cannot be empty.");
+    // Validate individual fields
+    const newFieldErrors = {};
+    if (!newHoliday.date) newFieldErrors.date = "This field is required";
+    if (!newHoliday.description)
+      newFieldErrors.description = "This field is required";
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setAddModalError("All fields are required");
       return;
     }
+
     try {
       await axios.post(`${API_URL}/api/holidays`, newHoliday);
       fetchAllHolidaysFromAPI();
@@ -202,15 +231,28 @@ const useHolidays = () => {
       } else {
         errorMessage = `Error: ${error.message}`;
       }
-      alert(errorMessage);
+      setAddModalError(errorMessage);
     }
   };
 
   const updateHolidays = async () => {
-    if (!editingHolidayId || !newHoliday.date || !newHoliday.description) {
-      alert("Cannot update: Missing data or ID.");
+    if (!editingHolidayId) {
+      setEditModalError("Cannot update: Missing holiday ID.");
       return;
     }
+
+    // Validate individual fields
+    const newFieldErrors = {};
+    if (!newHoliday.date) newFieldErrors.date = "This field is required";
+    if (!newHoliday.description)
+      newFieldErrors.description = "This field is required";
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
+      setEditModalError("All fields are required");
+      return;
+    }
+
     try {
       await axios.put(
         `${API_URL}/api/holidays/${editingHolidayId}`,
@@ -230,7 +272,7 @@ const useHolidays = () => {
       } else {
         errorMessage = `Error: ${error.message}`;
       }
-      alert(errorMessage);
+      setEditModalError(errorMessage);
     }
   };
 
@@ -245,17 +287,9 @@ const useHolidays = () => {
       closeDeleteModal();
     } catch (error) {
       console.error("Error deleting holiday:", error);
-      let errorMessage = "Could not delete holiday. Please try again.";
-      if (error.response) {
-        errorMessage = `Error: ${
-          error.response.data.message || "Server error."
-        } (Status: ${error.response.status})`;
-      } else if (error.request) {
-        errorMessage = "Error: No response from server.";
-      } else {
-        errorMessage = `Error: ${error.message}`;
-      }
-      alert(errorMessage);
+      // Note: For delete operations, we could add a toast notification instead of alert
+      // For now, we'll just log the error and close the modal
+      closeDeleteModal();
     }
   };
 
@@ -266,6 +300,9 @@ const useHolidays = () => {
     isDeleteModalOpen,
     newHoliday,
     holidays: displayedHolidays,
+    fieldErrors,
+    addModalError,
+    editModalError,
     toggleSidebar,
     openAddModal,
     closeAddModal,

@@ -144,9 +144,32 @@ const useAppointment = () => {
   };
 
   // Appointment status handlers
-  const deleteAppointment = () => {
+  const deleteAppointment = async () => {
     if (selectedAppointment) {
       try {
+        // Get authentication token
+        const token = localStorage.getItem("token");
+        if (!token) {
+          throw new Error("No authentication token found");
+        }
+
+        // Call backend API to delete the appointment status (this will trigger notification)
+        const response = await fetch(
+          `https://appointment-system-backend-n8dk.onrender.com/api/status/status/${selectedAppointment.transactionNumber}`,
+          {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Failed to delete appointment");
+        }
+
         // Add archived flag and date to the appointment
         const archivedAppointment = {
           ...selectedAppointment,
@@ -182,7 +205,9 @@ const useAppointment = () => {
         closeModal();
       } catch (error) {
         console.error("Error deleting appointment:", error);
-        alert("Failed to delete appointment. Please try again.");
+        setError(
+          error.message || "Failed to delete appointment. Please try again."
+        );
       }
     }
   };
@@ -190,6 +215,12 @@ const useAppointment = () => {
   const updateAppointmentStatus = async (appointment, newStatus) => {
     try {
       console.log("Updating status:", { appointment, newStatus }); // Debug log
+
+      // Get authentication token
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
 
       // Ensure we have the correct timeSlot information
       const timeSlotToSend =
@@ -199,12 +230,19 @@ const useAppointment = () => {
 
       console.log("Sending timeSlot:", timeSlotToSend); // Debug log
 
+      // Get admin name from localStorage
+      const userData = JSON.parse(
+        localStorage.getItem("user") || localStorage.getItem("userData") || "{}"
+      );
+      const adminName = userData.name || userData.email || "Admin";
+
       const response = await fetch(
         `https://appointment-system-backend-n8dk.onrender.com/api/status/status/${appointment.transactionNumber}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             status: newStatus,
@@ -212,6 +250,7 @@ const useAppointment = () => {
             name: appointment.name, // Make sure this is included
             appointmentDate: appointment.dateOfAppointment,
             timeSlot: timeSlotToSend,
+            adminName: adminName, // Include admin name from frontend
           }),
         }
       );
@@ -316,8 +355,44 @@ const useAppointment = () => {
           throw new Error("Failed to parse status data");
         }
 
+        // ENHANCED DEDUPLICATION: Remove duplicates by email address and prefer TR format
+        // This handles the case where same user has multiple records with different transactionNumber formats
+        const uniqueStatusData = [];
+        const seenEmails = new Set();
+
+        // Sort by dateOfRequest (most recent first) and prefer TR format transactionNumbers
+        const sortedStatusData = [...statusData].sort((a, b) => {
+          // First, prefer TR format over ObjectId format
+          const aIsTR =
+            a.transactionNumber && a.transactionNumber.startsWith("TR");
+          const bIsTR =
+            b.transactionNumber && b.transactionNumber.startsWith("TR");
+
+          if (aIsTR && !bIsTR) return -1; // a comes first (TR format preferred)
+          if (!aIsTR && bIsTR) return 1; // b comes first (TR format preferred)
+
+          // If both are same format, sort by date (most recent first)
+          const dateA = new Date(a.dateOfRequest || 0);
+          const dateB = new Date(b.dateOfRequest || 0);
+          return dateB - dateA;
+        });
+
+        sortedStatusData.forEach((status) => {
+          const email = status.emailAddress;
+          if (email && !seenEmails.has(email)) {
+            uniqueStatusData.push(status);
+            seenEmails.add(email);
+          }
+        });
+
+        console.log(
+          `Removed ${
+            statusData.length - uniqueStatusData.length
+          } duplicate status entries`
+        );
+
         // Create a map of transaction numbers to their status
-        const statusMap = statusData.reduce((acc, curr) => {
+        const statusMap = uniqueStatusData.reduce((acc, curr) => {
           if (curr && curr.transactionNumber) {
             acc[curr.transactionNumber] = curr;
           }

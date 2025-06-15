@@ -28,6 +28,7 @@ const useSchedule = () => {
   // State for error messages in modals
   const [addModalError, setAddModalError] = useState(null);
   const [editModalError, setEditModalError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [originalScheduleForForm, setOriginalScheduleForForm] = useState(null);
 
@@ -82,6 +83,7 @@ const useSchedule = () => {
   const openAddModal = () => {
     setNewSchedule(initialScheduleState);
     setAddModalError(null);
+    setFieldErrors({});
     setIsAddModalOpen(true);
   };
   const closeDeleteModal = () => {
@@ -91,6 +93,7 @@ const useSchedule = () => {
   const closeAddModal = () => {
     setNewSchedule(initialScheduleState);
     setAddModalError(null);
+    setFieldErrors({});
     setIsAddModalOpen(false);
   };
 
@@ -107,6 +110,7 @@ const useSchedule = () => {
     setNewSchedule(formReadySchedule);
     setOriginalScheduleForForm(formReadySchedule);
     setEditModalError(null);
+    setFieldErrors({});
     setIsEditModalOpen(true);
   };
 
@@ -115,6 +119,7 @@ const useSchedule = () => {
     setOriginalScheduleForForm(null);
     setEditIndex(null);
     setEditModalError(null);
+    setFieldErrors({});
     setIsEditModalOpen(false);
   };
 
@@ -123,6 +128,10 @@ const useSchedule = () => {
     setNewSchedule((prev) => ({ ...prev, [name]: value }));
     if (addModalError) setAddModalError(null);
     if (editModalError) setEditModalError(null);
+    // Clear field error when user starts typing
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
   // --- Formatting for display/storage ---
@@ -147,12 +156,16 @@ const useSchedule = () => {
   const handleUpdateSchedule = async () => {
     if (editIndex === null || !originalScheduleForForm) return;
 
-    if (
-      !newSchedule.slots ||
-      !newSchedule.date ||
-      !newSchedule.startTime ||
-      !newSchedule.endTime
-    ) {
+    // Validate individual fields
+    const newFieldErrors = {};
+    if (!newSchedule.slots) newFieldErrors.slots = "This field is required";
+    if (!newSchedule.date) newFieldErrors.date = "This field is required";
+    if (!newSchedule.startTime)
+      newFieldErrors.startTime = "This field is required";
+    if (!newSchedule.endTime) newFieldErrors.endTime = "This field is required";
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
       setEditModalError("All fields are required");
       return;
     }
@@ -204,12 +217,16 @@ const useSchedule = () => {
   };
 
   const addSchedule = async () => {
-    if (
-      !newSchedule.slots ||
-      !newSchedule.date ||
-      !newSchedule.startTime ||
-      !newSchedule.endTime
-    ) {
+    // Validate individual fields
+    const newFieldErrors = {};
+    if (!newSchedule.slots) newFieldErrors.slots = "This field is required";
+    if (!newSchedule.date) newFieldErrors.date = "This field is required";
+    if (!newSchedule.startTime)
+      newFieldErrors.startTime = "This field is required";
+    if (!newSchedule.endTime) newFieldErrors.endTime = "This field is required";
+
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
       setAddModalError("All fields are required");
       return;
     }
@@ -305,6 +322,7 @@ const useSchedule = () => {
     loading,
     addModalError,
     editModalError,
+    fieldErrors,
 
     toggleSidebar,
     openAddModal,
