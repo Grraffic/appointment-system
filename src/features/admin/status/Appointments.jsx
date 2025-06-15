@@ -7,6 +7,52 @@ import { FaSearch } from "react-icons/fa";
 import { BsTrash3 } from "react-icons/bs";
 import { Tooltip } from "react-tooltip";
 import useAppointment from "./hooks/useAppointment";
+import { useState } from "react";
+
+// Custom Tooltip Component for multi-line text
+const CustomTooltip = ({ text, children }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (e) => {
+    if (text) {
+      const rect = e.target.getBoundingClientRect();
+      setTooltipPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10,
+      });
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  return (
+    <div className="relative">
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="cursor-help"
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div
+          className="fixed z-50 bg-gray-800 text-white p-3 rounded-lg shadow-lg max-w-sm text-sm whitespace-pre-wrap break-words leading-relaxed"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
+          {text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Appointments = () => {
   const {
@@ -144,6 +190,7 @@ const Appointments = () => {
                         EMAIL <br />
                         ADDRESS
                       </th>
+                      <th className="border p-4">PURPOSE</th>
                       <th className="border p-4">
                         DATE OF
                         <br />
@@ -161,7 +208,7 @@ const Appointments = () => {
                   <tbody>
                     {loading && (
                       <tr>
-                        <td colSpan="8" className="text-center p-5">
+                        <td colSpan="9" className="text-center p-5">
                           Loading appointments...
                         </td>
                       </tr>
@@ -169,7 +216,7 @@ const Appointments = () => {
                     {error && (
                       <tr>
                         <td
-                          colSpan="8"
+                          colSpan="9"
                           className="text-center p-5 text-red-500"
                         >
                           Error: {error}
@@ -206,7 +253,37 @@ const Appointments = () => {
                               </div>
                             </td>
                             <td className="border p-4">{data.request}</td>
-                            <td className="border p-4">{data.emailAddress}</td>
+                            <td className="border p-4 max-w-0">
+                              <div className="truncate">
+                                {data.emailAddress &&
+                                data.emailAddress !== "No email specified" ? (
+                                  <CustomTooltip text={data.emailAddress}>
+                                    <span className="block truncate">
+                                      {data.emailAddress}
+                                    </span>
+                                  </CustomTooltip>
+                                ) : (
+                                  <span className="text-gray-500 text-sm">
+                                    No email
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="border p-4 max-w-0">
+                              <div className="truncate">
+                                {data.purpose && data.purpose !== "N/A" ? (
+                                  <CustomTooltip text={data.purpose}>
+                                    <span className="block truncate">
+                                      {data.purpose}
+                                    </span>
+                                  </CustomTooltip>
+                                ) : (
+                                  <span className="text-gray-500 text-sm">
+                                    No purpose specified
+                                  </span>
+                                )}
+                              </div>
+                            </td>
                             <td className="border p-4">
                               {data.dateOfAppointment}
                             </td>

@@ -3,6 +3,52 @@ import Header from "/src/features/admin/components/Header";
 import Footer from "/src/features/admin/components/Footer";
 import useStudents from "./hooks/useStudents";
 import { FaSearch } from "react-icons/fa";
+import { useState } from "react";
+
+// Custom Tooltip Component for multi-line text
+const CustomTooltip = ({ text, children }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouseEnter = (e) => {
+    if (text) {
+      const rect = e.target.getBoundingClientRect();
+      setTooltipPosition({
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10,
+      });
+      setShowTooltip(true);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setShowTooltip(false);
+  };
+
+  return (
+    <div className="relative">
+      <div
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="cursor-help"
+      >
+        {children}
+      </div>
+      {showTooltip && (
+        <div
+          className="fixed z-50 bg-gray-800 text-white p-3 rounded-lg shadow-lg max-w-sm text-sm whitespace-pre-wrap break-words leading-relaxed"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
+          {text}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Students = () => {
   const API_URL =
@@ -112,6 +158,7 @@ const Students = () => {
                   <th className="border p-5">CONTACT NO.</th>
                   <th className="border p-5">EMAIL ADDRESS</th>
                   <th className="border p-5">ATTACHMENT PROOF</th>
+                  <th className="border p-5">PURPOSE</th>
                   <th className="border p-5">REQUEST</th>
                   <th className="border p-5">DATE OF REQUEST</th>
                 </tr>
@@ -119,21 +166,21 @@ const Students = () => {
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan="9" className="text-center p-5">
+                    <td colSpan="10" className="text-center p-5">
                       Loading student records...
                     </td>
                   </tr>
                 )}
                 {error && (
                   <tr>
-                    <td colSpan="9" className="text-center p-5 text-red-500">
+                    <td colSpan="10" className="text-center p-5 text-red-500">
                       Error: {error}
                     </td>
                   </tr>
                 )}
                 {!loading && !error && filteredAppointments.length === 0 && (
                   <tr>
-                    <td colSpan="9" className="text-center p-5">
+                    <td colSpan="10" className="text-center p-5">
                       {searchTerm
                         ? "No matching records found."
                         : "No student records found."}
@@ -161,30 +208,57 @@ const Students = () => {
                         <td className="border p-5">{data.lastSY}</td>
                         <td className="border p-5">{data.program}</td>
                         <td className="border p-5">{data.contact}</td>
-                        <td className="border p-5">{data.email}</td>
-                        <td className="border p-5">
-                          {data.attachment &&
-                          data.attachment !== "No attachments" ? (
-                            <div className="flex flex-col gap-1">
-                              {data.attachment
-                                .split(", ")
-                                .map((filename, index) => (
-                                  <span
-                                    key={index}
-                                    className="text-blue-600 hover:underline cursor-pointer text-sm"
-                                    title={filename}
-                                  >
-                                    {filename.length > 30
-                                      ? `${filename.substring(0, 30)}...`
-                                      : filename}
-                                  </span>
-                                ))}
-                            </div>
-                          ) : (
-                            <span className="text-gray-500 text-sm">
-                              No attachments
-                            </span>
-                          )}
+                        <td className="border p-5 max-w-0">
+                          <div className="truncate">
+                            {data.email && data.email !== "N/A" ? (
+                              <CustomTooltip text={data.email}>
+                                <span className="block truncate">
+                                  {data.email}
+                                </span>
+                              </CustomTooltip>
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No email
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border p-5 max-w-0">
+                          <div className="truncate">
+                            {data.attachment &&
+                            data.attachment !== "No attachments" ? (
+                              <div className="flex flex-col gap-1">
+                                {data.attachment
+                                  .split(", ")
+                                  .map((filename, index) => (
+                                    <CustomTooltip key={index} text={filename}>
+                                      <span className="text-blue-600 hover:underline cursor-pointer text-sm block truncate">
+                                        {filename}
+                                      </span>
+                                    </CustomTooltip>
+                                  ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No attachments
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="border p-5 max-w-0">
+                          <div className="truncate">
+                            {data.purpose && data.purpose !== "N/A" ? (
+                              <CustomTooltip text={data.purpose}>
+                                <span className="block truncate">
+                                  {data.purpose}
+                                </span>
+                              </CustomTooltip>
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No purpose specified
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="border p-5">{data.request}</td>
                         <td className="border p-5">

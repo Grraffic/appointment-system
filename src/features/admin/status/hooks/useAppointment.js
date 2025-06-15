@@ -212,7 +212,6 @@ const useAppointment = () => {
         throw new Error("Failed to update status");
       }
 
-
       // Update the local state
       setAppointments((prevAppointments) =>
         prevAppointments.map((appt) =>
@@ -334,6 +333,7 @@ const useAppointment = () => {
               transactionNumber: student.transactionNumber,
               request: student.request || "No request specified",
               emailAddress: student.email || "No email specified",
+              purpose: student.purpose || "N/A",
               dateOfAppointment: student.appointmentDate || "Not scheduled",
               timeSlot: student.timeSlot || "Not scheduled",
               dateOfRequest:
