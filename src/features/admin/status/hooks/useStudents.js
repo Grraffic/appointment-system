@@ -34,7 +34,6 @@ const useStudents = (apiUrl) => {
       data.lastSY?.toLowerCase().includes(searchString) ||
       data.program?.toLowerCase().includes(searchString) ||
       data.contact?.toLowerCase().includes(searchString) ||
-      data.purpose?.toLowerCase().includes(searchString) ||
       data.email?.toLowerCase().includes(searchString) ||
       data.request?.toLowerCase().includes(searchString)
     );
@@ -43,8 +42,7 @@ const useStudents = (apiUrl) => {
   // Calculate pagination values
   const totalFilteredEntries = filteredAppointments.length;
   const calculatedTotalPages = Math.ceil(totalFilteredEntries / entriesPerPage);
-  const startEntry =
-    totalFilteredEntries > 0 ? (currentPage - 1) * entriesPerPage + 1 : 0;
+  const startEntry = totalFilteredEntries > 0 ? (currentPage - 1) * entriesPerPage + 1 : 0;
   const endEntry = Math.min(currentPage * entriesPerPage, totalFilteredEntries);
 
   // Generate page numbers array
@@ -97,38 +95,27 @@ const useStudents = (apiUrl) => {
     const fetchStudentsData = async () => {
       setLoading(true);
       setError(null);
+      setAppointments([]); // Clear previous data
+
       try {
-        console.log("Fetching students data from:", apiUrl);
         const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
         const data = await response.json();
 
-        console.log("Raw API response:", data);
+        // Get archived appointments from localStorage
+        const archivedAppointments = JSON.parse(localStorage.getItem('archivedAppointments') || '[]');
+        const archivedTransactionNumbers = new Set(archivedAppointments.map(appt => appt.transactionNumber));
 
-        // Filter out archived appointments and transform data
-        const filteredData = data
-          .filter((student) => !student.archived)
-          .map((student) => {
-            console.log("Processing student with purpose:", {
-              originalPurpose: student.purpose,
-              appointmentPurpose: student.appointmentPurpose,
-              documentRequestPurpose: student.documentRequest?.purpose,
-            });
-            const processed = {
-              ...student,
-              purpose:
-                student.purpose ||
-                student.appointmentPurpose ||
-                "No purpose specified",
-            };
-            console.log("Processed student data with purpose:", processed);
-            return processed;
-          });
-
-        console.log("Final filtered and processed data:", filteredData);
+        // Filter out archived appointments
+        const filteredData = data.filter(student => !archivedTransactionNumbers.has(student.transactionNumber));
+        
         setAppointments(filteredData);
       } catch (err) {
         console.error("Failed to fetch student data:", err);
-        setError(err.message);
+        setError(err.message || "An error occurred while fetching data.");
+        setAppointments([]); // Ensure appointments is empty on error
       } finally {
         setLoading(false);
       }
@@ -137,10 +124,10 @@ const useStudents = (apiUrl) => {
     fetchStudentsData();
 
     // Set up auto-refresh every 30 seconds
-    // const refreshInterval = setInterval(fetchStudentsData, 30000);
+    const refreshInterval = setInterval(fetchStudentsData, 30000);
 
-    // // Cleanup interval on unmount
-    // return () => clearInterval(refreshInterval);
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval);
   }, [apiUrl]);
 
   return {
@@ -148,7 +135,7 @@ const useStudents = (apiUrl) => {
     appointments,
     loading,
     error,
-
+    
     // Pagination states
     currentPage,
     entriesPerPage,
@@ -157,21 +144,21 @@ const useStudents = (apiUrl) => {
     startEntry,
     endEntry,
     pageNumbers,
-
+    
     // Filtered data
     filteredAppointments,
-
+    
     // Handlers
     handleSearchChange,
     handleEntriesPerPageChange,
     handleNextPage,
     handlePreviousPage,
     handlePageChange,
-
+    
     // Search state
     searchTerm,
-
-    // Sidebar states and handlers
+    
+     // Sidebar states and handlers
     isSidebarOpen,
     toggleSidebar,
   };

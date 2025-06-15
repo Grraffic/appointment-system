@@ -51,11 +51,7 @@ const Feedback = () => {
     <div className="flex h-screen font-LatoRegular">
       <main className="flex-1 flex flex-row">
         {/* Sidebar */}
-        <div
-          className={`${
-            isSidebarOpen ? "w-[300px]" : "w-[100px]"
-          }transition-all duration-300 z-20`}
-        >
+        <div className={`${isSidebarOpen ? "w-[300px]" : "w-[100px]"} z-20`}>
           <Sidebar isSidebarOpen={isSidebarOpen} />
         </div>
 
@@ -73,16 +69,16 @@ const Feedback = () => {
             <Header
               toggleSidebar={toggleSidebar}
               isSidebarOpen={isSidebarOpen}
-              title="Feedback"
+              title="User Feedback"
             />
             <section className="min-h-[calc(100vh-160px)] z-10 rounded-md shadow-md max-w-[1600px] mx-auto">
               {/* Header */}
               <div
-                className="bg-white my-6 rounded-md flex flex-col items-between justify-between p-6 shadow-lg"
+                className="bg-white my-6 rounded-md py-10 p-6"
                 style={{ minHeight: "120px" }}
               >
                 <div className="text-[#161F55] mb-6">
-                  <h2 className="text-3xl tracking-[5px] mb-2 font-bold">
+                  <h2 className="text-3xl tracking-[5px] mb-2">
                     User Feedback
                   </h2>
                   <div className="border-b-4 border-[#F3BC62] w-[260px]" />
@@ -157,33 +153,30 @@ const Feedback = () => {
                       {currentFeedback.map((fb) => (
                         <div
                           key={fb._id}
-                          className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm w-full h-[200px] flex items-center justify-center"
+                          className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm max-w-xl mx-auto"
                         >
-                          {/* Container for initials, name, divider, and stars horizontally */}{" "}
-                          <div className="flex items-center justify-between w-full max-w-2xl mx-auto gap-4">
-                            {/* Left section: Initials and Name */}
-                            <div className="flex items-center gap-4">
-                              {/* Initials */}
-                              <div
-                                className={`w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full text-white text-xl font-bold ${getRandomColor(
-                                  fb.name
-                                )}`}
-                              >
-                                {getInitials(fb.name)}
-                              </div>
-
-                              {/* Name */}
-                              <div className="text-[#1A2341] font-semibold text-base leading-5 text-center whitespace-nowrap">
-                                <div>{fb.name.split(" ")[0]}</div>
-                                <div>
-                                  {fb.name.split(" ").slice(1).join(" ")}
-                                </div>
-                              </div>
+                          {/* Container for initials, name, divider, and stars horizontally */}
+                          <div className="flex items-center justify-center gap-6">
+                            {/* Initials */}
+                            <div
+                              className={`w-16 h-16 flex items-center justify-center rounded-full text-white text-xl font-bold ${getRandomColor(
+                                fb.name
+                              )}`}
+                            >
+                              {getInitials(fb.name)}
                             </div>
+
+                            {/* Name */}
+                            <div className="text-[#1A2341] font-semibold text-base leading-5 text-center whitespace-nowrap">
+                              <div>{fb.name.split(" ")[0]}</div>
+                              <div>{fb.name.split(" ").slice(1).join(" ")}</div>
+                            </div>
+
                             {/* Divider Line (vertical divider) */}
-                            <div className="border-l-4 border-[#F3BC62] h-16 mx-4"></div>
-                            {/* Ratings (vertical stack inside horizontal container) */}{" "}
-                            <div className="flex flex-col gap-2 flex-grow max-w-[280px]">
+                            <div className="border-l-4 border-[#F3BC62] h-16"></div>
+
+                            {/* Ratings (vertical stack inside horizontal container) */}
+                            <div className="flex flex-col gap-2">
                               {Object.entries(fb.ratings).map(
                                 ([category, rating]) => {
                                   const formattedLabel = category
@@ -193,7 +186,7 @@ const Feedback = () => {
                                   return (
                                     <div
                                       key={category}
-                                      className="flex items-center gap-2 justify-between whitespace-nowrap w-full"
+                                      className="flex items-center gap-2 justify-center whitespace-nowrap"
                                     >
                                       <span className="text-[#1A2341] text-sm w-28 text-right">
                                         {formattedLabel}

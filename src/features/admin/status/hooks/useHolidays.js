@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL; // Ensure this matches your backend port
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"; // Ensure this matches your backend port
 
 const useHolidays = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -18,7 +18,6 @@ const useHolidays = () => {
   const initialHolidayState = { date: "", description: "" };
   const [newHoliday, setNewHoliday] = useState(initialHolidayState);
   const [editingHolidayId, setEditingHolidayId] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
   const [allHolidays, setAllHolidays] = useState([]);
   const [displayedHolidays, setDisplayedHolidays] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -151,11 +150,7 @@ const useHolidays = () => {
     setEditingHolidayId(null);
     setIsAddModalOpen(true);
   };
-  const closeAddModal = () => {
-    setIsAddModalOpen(false);
-    setValidationErrors({});
-    setNewHoliday(initialHolidayState);
-  };
+  const closeAddModal = () => setIsAddModalOpen(false);
 
   const openEditModal = (holidayToEdit) => {
     setNewHoliday({
@@ -169,7 +164,6 @@ const useHolidays = () => {
     setIsEditModalOpen(false);
     setEditingHolidayId(null);
     setNewHoliday(initialHolidayState);
-    setValidationErrors({});
   };
 
   const openDeleteModal = (holidayId) => {
@@ -184,43 +178,18 @@ const useHolidays = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewHoliday((prev) => ({ ...prev, [name]: value }));
-
-    // Clear validation error for this field when user starts typing
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
   };
 
   // CRUD functions - fetchAllHolidaysFromAPI is called after success
   const addHolidays = async () => {
-    // Clear previous validation errors
-    setValidationErrors({});
-
-    const errors = {};
-
-    // Validate required fields
-    if (!newHoliday.date) {
-      errors.date = "Date is required";
-    }
-    if (!newHoliday.description || newHoliday.description.trim() === "") {
-      errors.description = "Description is required";
-    }
-
-    // If there are validation errors, set them and return
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+    if (!newHoliday.date || !newHoliday.description) {
+      alert("Date and Description cannot be empty.");
       return;
     }
-
     try {
       await axios.post(`${API_URL}/api/holidays`, newHoliday);
       fetchAllHolidaysFromAPI();
       closeAddModal();
-      setValidationErrors({}); // Clear validation errors
     } catch (error) {
       console.error("Error adding holiday:", error);
       let errorMessage = "Could not add holiday. Please try again.";
@@ -233,35 +202,15 @@ const useHolidays = () => {
       } else {
         errorMessage = `Error: ${error.message}`;
       }
-      setValidationErrors({
-        general: errorMessage,
-      });
+      alert(errorMessage);
     }
   };
 
   const updateHolidays = async () => {
-    // Clear previous validation errors
-    setValidationErrors({});
-
-    const errors = {};
-
-    // Validate required fields
-    if (!newHoliday.date) {
-      errors.date = "Date is required";
-    }
-    if (!newHoliday.description || newHoliday.description.trim() === "") {
-      errors.description = "Description is required";
-    }
-    if (!editingHolidayId) {
-      errors.general = "Cannot update: Missing holiday ID";
-    }
-
-    // If there are validation errors, set them and return
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
+    if (!editingHolidayId || !newHoliday.date || !newHoliday.description) {
+      alert("Cannot update: Missing data or ID.");
       return;
     }
-
     try {
       await axios.put(
         `${API_URL}/api/holidays/${editingHolidayId}`,
@@ -269,7 +218,6 @@ const useHolidays = () => {
       );
       fetchAllHolidaysFromAPI();
       closeEditModal();
-      setValidationErrors({}); // Clear validation errors
     } catch (error) {
       console.error("Error updating holiday:", error);
       let errorMessage = "Could not update holiday. Please try again.";
@@ -282,9 +230,7 @@ const useHolidays = () => {
       } else {
         errorMessage = `Error: ${error.message}`;
       }
-      setValidationErrors({
-        general: errorMessage,
-      });
+      alert(errorMessage);
     }
   };
 
@@ -320,7 +266,6 @@ const useHolidays = () => {
     isDeleteModalOpen,
     newHoliday,
     holidays: displayedHolidays,
-    validationErrors,
     toggleSidebar,
     openAddModal,
     closeAddModal,

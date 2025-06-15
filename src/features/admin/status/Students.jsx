@@ -3,56 +3,10 @@ import Header from "/src/features/admin/components/Header";
 import Footer from "/src/features/admin/components/Footer";
 import useStudents from "./hooks/useStudents";
 import { FaSearch } from "react-icons/fa";
-import { Tooltip } from "react-tooltip";
 
 const Students = () => {
-  const API_URL = `${
-    import.meta.env.VITE_API_URL
-  }/api/document-requests/docs-with-details`;
-
-  // Custom CSS for tooltips
-  const tooltipStyle = `
-  /* The parent element (now the <td>) needs to be the positioning context */
-  [data-tooltip] {
-    position: relative;
-  }
-
-  /* The cursor should only change to a pointer if a tooltip exists */
-  [data-tooltip][data-tooltip]:hover {
-    cursor: pointer;
-  }
-
-  [data-tooltip]::before {
-    content: attr(data-tooltip);
-    position: absolute;
-    background: rgba(0, 0, 0, 0.85);
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    white-space: pre-line;
-    max-width: 300px;
-    width: max-content;
-    z-index: 1000;
-
-    /* Initially hidden and non-interactive */
-    opacity: 0;
-    pointer-events: none;
-
-    /* Positioning - show below the element */
-    top: 105%;
-    left: 50%;
-    transform: translateX(-50%);
-
-    /* Smooth transition */
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  /* Show on hover */
-  [data-tooltip]:hover::before {
-    opacity: 1;
-  }
-`;
+  const API_URL =
+    "https://appointment-system-backend-n8dk.onrender.com/api/document-requests/docs-with-details";
 
   const {
     // Data states
@@ -88,13 +42,7 @@ const Students = () => {
 
   return (
     <div className="flex h-screen font-LatoRegular">
-      <style>{tooltipStyle}</style>
-
-      <div
-        className={`${
-          isSidebarOpen ? "w-[300px]" : "w-[100px]"
-        }transition-all duration-300 z-20`}
-      >
+      <div className={`${isSidebarOpen ? "w-[300px]" : "w-[100px]"}`}>
         <Sidebar isSidebarOpen={isSidebarOpen} />
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -153,40 +101,39 @@ const Students = () => {
             >
               <thead>
                 <tr className="bg-gray-200 text-center">
-                  <th className="border p-5 w-[12%]">TRANSACTION NO.</th>
-                  <th className="border p-5 w-[15%]">NAME</th>
-                  <th className="border p-5 w-[10%]">LAST S.Y. ATTENDED</th>
-                  <th className="border p-5 w-[12%]">
+                  <th className="border p-5">TRANSACTION NO.</th>
+                  <th className="border p-5">NAME</th>
+                  <th className="border p-5">LAST S.Y. ATTENDED</th>
+                  <th className="border p-5">
                     PROGRAM/GRADE/
                     <br />
                     STRAND
                   </th>
-                  <th className="border p-5 w-[10%]">CONTACT NO.</th>
-                  <th className="border p-5 w-[13%]">EMAIL ADDRESS</th>
-                  <th className="border p-5 w-[12%]">PURPOSE</th>
-                  <th className="border p-5 w-[10%]">ATTACHMENT PROOF</th>
-                  <th className="border p-5 w-[8%]">REQUEST</th>
-                  <th className="border p-5 w-[8%]">DATE OF REQUEST</th>
+                  <th className="border p-5">CONTACT NO.</th>
+                  <th className="border p-5">EMAIL ADDRESS</th>
+                  <th className="border p-5">ATTACHMENT PROOF</th>
+                  <th className="border p-5">REQUEST</th>
+                  <th className="border p-5">DATE OF REQUEST</th>
                 </tr>
               </thead>
               <tbody>
                 {loading && (
                   <tr>
-                    <td colSpan="11" className="text-center p-5">
+                    <td colSpan="9" className="text-center p-5">
                       Loading student records...
                     </td>
                   </tr>
                 )}
                 {error && (
                   <tr>
-                    <td colSpan="11" className="text-center p-5 text-red-500">
+                    <td colSpan="9" className="text-center p-5 text-red-500">
                       Error: {error}
                     </td>
                   </tr>
                 )}
                 {!loading && !error && filteredAppointments.length === 0 && (
                   <tr>
-                    <td colSpan="11" className="text-center p-5">
+                    <td colSpan="9" className="text-center p-5">
                       {searchTerm
                         ? "No matching records found."
                         : "No student records found."}
@@ -200,139 +147,51 @@ const Students = () => {
                       (currentPage - 1) * entriesPerPage,
                       currentPage * entriesPerPage
                     )
-                    .map((data, index) => {
-                      const charLimit = 20;
-                      const isTransactionLong =
-                        data.transactionNumber?.length > charLimit;
-                      const isNameLong = data.name?.length > charLimit;
-                      const isLastSYLong = data.lastSY?.length > charLimit;
-                      const isProgramLong = data.program?.length > charLimit;
-                      const isContactLong = data.contact?.length > charLimit;
-                      const isEmailLong = data.email?.length > charLimit;
-                      const isPurposeLong = data.purpose?.length > charLimit;
-                      const isRequestLong = data.request?.length > charLimit;
-                      const formattedDate = new Date(
-                        data.date
-                      ).toLocaleDateString();
-
-                      return (
-                        <tr
-                          key={data.transactionNumber || index}
-                          className={`${
-                            index % 2 === 0 ? "bg-gray-100" : ""
-                          } text-center`}
-                        >
-                          <td
-                            className="border p-5 text-[#354CCE] font-bold"
-                            data-tooltip={
-                              isTransactionLong ? data.transactionNumber : null
-                            }
-                          >
-                            <div
-                              className={isTransactionLong ? "truncate" : ""}
-                            >
-                              {data.transactionNumber}
+                    .map((data, index) => (
+                      <tr
+                        key={data.transactionNumber || index}
+                        className={`${
+                          index % 2 === 0 ? "bg-gray-100" : ""
+                        } text-center`}
+                      >
+                        <td className="border p-5 text-[#354CCE] font-bold">
+                          {data.transactionNumber}
+                        </td>
+                        <td className="border p-5">{data.name}</td>
+                        <td className="border p-5">{data.lastSY}</td>
+                        <td className="border p-5">{data.program}</td>
+                        <td className="border p-5">{data.contact}</td>
+                        <td className="border p-5">{data.email}</td>
+                        <td className="border p-5">
+                          {data.attachment &&
+                          data.attachment !== "No attachments" ? (
+                            <div className="flex flex-col gap-1">
+                              {data.attachment
+                                .split(", ")
+                                .map((filename, index) => (
+                                  <span
+                                    key={index}
+                                    className="text-blue-600 hover:underline cursor-pointer text-sm"
+                                    title={filename}
+                                  >
+                                    {filename.length > 30
+                                      ? `${filename.substring(0, 30)}...`
+                                      : filename}
+                                  </span>
+                                ))}
                             </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isNameLong ? data.name : null}
-                          >
-                            <div className={isNameLong ? "truncate" : ""}>
-                              {data.name}
-                            </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isLastSYLong ? data.lastSY : null}
-                          >
-                            <div className={isLastSYLong ? "truncate" : ""}>
-                              {data.lastSY}
-                            </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isProgramLong ? data.program : null}
-                          >
-                            <div className={isProgramLong ? "truncate" : ""}>
-                              {data.program}
-                            </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isContactLong ? data.contact : null}
-                          >
-                            <div className={isContactLong ? "truncate" : ""}>
-                              {data.contact}
-                            </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isEmailLong ? data.email : null}
-                          >
-                            <div className={isEmailLong ? "truncate" : ""}>
-                              {data.email}
-                            </div>
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={
-                              isPurposeLong
-                                ? data.purpose?.replace(/(.{50})/g, "$1\n")
-                                : null
-                            }
-                          >
-                            <div className={isPurposeLong ? "truncate" : ""}>
-                              {data.purpose || "No purpose specified"}
-                            </div>
-                          </td>
-                          <td className="border p-5">
-                            {data.attachment &&
-                            data.attachment !== "No attachments" ? (
-                              <div className="flex flex-col gap-1">
-                                {data.attachment
-                                  .split(", ")
-                                  .map((filename, fileIndex) => {
-                                    const isFilenameLong = filename.length > 15;
-                                    return (
-                                      <div
-                                        key={fileIndex}
-                                        data-tooltip={
-                                          isFilenameLong ? filename : null
-                                        }
-                                        className="relative"
-                                      >
-                                        <div
-                                          className={`${
-                                            isFilenameLong ? "truncate" : ""
-                                          } text-blue-600 hover:underline cursor-pointer text-sm`}
-                                        >
-                                          {filename}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                              </div>
-                            ) : (
-                              <span className="text-gray-500 text-sm">
-                                No attachments
-                              </span>
-                            )}
-                          </td>
-                          <td
-                            className="border p-5"
-                            data-tooltip={isRequestLong ? data.request : null}
-                          >
-                            <div className={isRequestLong ? "truncate" : ""}>
-                              {data.request}
-                            </div>
-                          </td>
-                          <td className="border p-5">
-                            <div>{formattedDate}</div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          ) : (
+                            <span className="text-gray-500 text-sm">
+                              No attachments
+                            </span>
+                          )}
+                        </td>
+                        <td className="border p-5">{data.request}</td>
+                        <td className="border p-5">
+                          {new Date(data.date).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
 
@@ -342,7 +201,6 @@ const Students = () => {
                   SHOWING {startEntry} TO {endEntry} OF {totalFilteredEntries}{" "}
                   ENTRIES
                 </span>
-
                 {calculatedTotalPages > 1 && (
                   <div className="flex items-center">
                     <button
@@ -380,10 +238,6 @@ const Students = () => {
           <Footer />
         </main>
       </div>
-
-      {/* Tooltips */}
-      <Tooltip id="email-tooltip" />
-      <Tooltip id="purpose-tooltip" />
     </div>
   );
 };

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from "react";
-import { toast } from "react-toastify";
 import {
   getAllSchedules,
   createSchedule,
@@ -41,12 +40,6 @@ const useSchedule = () => {
   const [newSchedule, setNewSchedule] = useState(initialScheduleState);
   const [schedules, setSchedules] = useState([]);
 
-  // Add pagination and search states
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const [entriesPerPage, setEntriesPerPage] = useState(10);
-  const [allSchedules, setAllSchedules] = useState([]);
-
   // Format schedule data for display
   const formatScheduleForDisplay = useCallback((schedule, index) => {
     return {
@@ -69,7 +62,7 @@ const useSchedule = () => {
       const formattedSchedules = data.map((schedule, index) =>
         formatScheduleForDisplay(schedule, index)
       );
-      setAllSchedules(formattedSchedules);
+      setSchedules(formattedSchedules);
     } catch (error) {
       console.error("Error fetching schedules:", error);
       setAddModalError("Failed to fetch schedules");
@@ -85,88 +78,30 @@ const useSchedule = () => {
     return () => clearInterval(refreshInterval);
   }, [fetchSchedules]);
 
-  // Effect to filter and paginate schedules for display
-  useEffect(() => {
-    let filtered = allSchedules;
-
-    if (searchTerm.trim() !== "") {
-      filtered = allSchedules.filter(
-        (schedule) =>
-          (schedule.date &&
-            schedule.date.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (schedule.slots && schedule.slots.toString().includes(searchTerm)) ||
-          (schedule.startTime &&
-            schedule.startTime
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())) ||
-          (schedule.endTime &&
-            schedule.endTime.toLowerCase().includes(searchTerm.toLowerCase()))
-      );
-    }
-
-    const indexOfLastEntry = currentPage * entriesPerPage;
-    const indexOfFirstEntry = indexOfLastEntry - entriesPerPage;
-    setSchedules(filtered.slice(indexOfFirstEntry, indexOfLastEntry));
-    const totalFiltered = filtered.length;
-    const maxPage = Math.max(1, Math.ceil(totalFiltered / entriesPerPage));
-    if (currentPage > maxPage) {
-      setCurrentPage(maxPage);
-    }
-  }, [allSchedules, searchTerm, currentPage, entriesPerPage]);
-
-  // Calculate total filtered entries and pages
-  const getFilteredCount = () => {
-    if (searchTerm.trim() !== "") {
-      return allSchedules.filter(
-        (schedule) =>
-          (schedule.date &&
-            schedule.date.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (schedule.slots && schedule.slots.toString().includes(searchTerm)) ||
-          (schedule.startTime &&
-            schedule.startTime
-              .toLowerCase()
-              .includes(searchTerm.toLowerCase())) ||
-          (schedule.endTime &&
-            schedule.endTime.toLowerCase().includes(searchTerm.toLowerCase()))
-      ).length;
-    }
-    return allSchedules.length;
-  };
-
-  const totalFilteredEntries = getFilteredCount();
-  const calculatedTotalPages = Math.max(
-    1,
-    Math.ceil(totalFilteredEntries / entriesPerPage)
-  );
-
   // --- Modal Open/Close ---
   const openAddModal = () => {
     setNewSchedule(initialScheduleState);
     setAddModalError(null);
     setIsAddModalOpen(true);
   };
+  const closeDeleteModal = () => {
+    setDeleteIndex(null);
+    setIsDeleteModalOpen(false);
+  };
   const closeAddModal = () => {
     setNewSchedule(initialScheduleState);
     setAddModalError(null);
     setIsAddModalOpen(false);
   };
+
   const openEditModal = (index) => {
     const scheduleToEdit = schedules[index];
     if (!scheduleToEdit) return;
-
-    // Clean the time strings to remove any AM/PM
-    const cleanStartTime = scheduleToEdit.startTime
-      .replace(/\s*(AM|PM)/i, "")
-      .trim();
-    const cleanEndTime = scheduleToEdit.endTime
-      .replace(/\s*(AM|PM)/i, "")
-      .trim();
-
     const formReadySchedule = {
       ...scheduleToEdit,
       date: formatDate(scheduleToEdit.date),
-      startTime: cleanStartTime,
-      endTime: cleanEndTime,
+      startTime: scheduleToEdit.startTime,
+      endTime: scheduleToEdit.endTime,
     };
     setEditIndex(index);
     setNewSchedule(formReadySchedule);
@@ -336,98 +271,28 @@ const useSchedule = () => {
     setIsDeleteModalOpen(true);
   };
 
-  const closeDeleteModal = () => {
-    setIsDeleteModalOpen(false);
-    setDeleteIndex(null);
-  };
   const confirmDelete = async () => {
     if (deleteIndex === null) return;
 
     try {
       const scheduleToDelete = schedules[deleteIndex];
+      const response = await deleteSchedule(scheduleToDelete._id);
+      await fetchSchedules();
+      closeDeleteModal();
 
-      // Check if schedule has any booked slots
-      const bookedSlots = parseInt(scheduleToDelete.bookedSlots) || 0;
-      if (bookedSlots > 0) {
-        toast.error(
-          `Cannot delete schedule with ${bookedSlots} booked appointments`
-        );
-        closeDeleteModal();
-        return;
-      }
+      // Show success message
+      toast.success("Schedule deleted successfully");
 
-      setLoading(true);
-
-      // Store a temporary copy of the schedule being deleted
-      const deletedSchedule = schedules[deleteIndex];
-
-      // First update the UI by removing the schedule
-      setSchedules((prev) => prev.filter((_, index) => index !== deleteIndex));
-
-      // Then close the modal
-      setIsDeleteModalOpen(false);
-      setDeleteIndex(null);
-
-      try {
-        // Actually perform the deletion
-        const response = await deleteSchedule(deletedSchedule._id);
-
-        // Show success message
-        toast.success("Schedule deleted successfully");
-
-        // Refresh schedules to ensure synchronization
-        await fetchSchedules();
-
-        if (response?.notification) {
-          console.log("Schedule deletion notification received");
-        }
-      } catch (error) {
-        // If deletion fails, revert the UI change
-        console.error("Error deleting schedule:", error);
-        toast.error(
-          error.response?.data?.message || "Failed to delete schedule"
-        );
-        await fetchSchedules(); // Refresh to restore the original state
+      // If notification is included in response, show notification
+      if (response.notification) {
+        // You can add additional notification handling here if needed
       }
     } catch (error) {
-      console.error("Error in delete process:", error);
-      toast.error("Failed to process deletion");
-    } finally {
-      setLoading(false);
+      console.error("Error deleting schedule:", error);
+      toast.error(error.response?.data?.message || "Failed to delete schedule");
     }
   };
 
-  // Handlers for Search and Pagination
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
-    setCurrentPage(1);
-  };
-
-  const handleEntriesPerPageChange = (event) => {
-    const newEntries = parseInt(event.target.value, 10);
-    if (newEntries > 0) {
-      setEntriesPerPage(newEntries);
-      setCurrentPage(1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < calculatedTotalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handlePageChange = (pageNumber) => {
-    if (pageNumber >= 1 && pageNumber <= calculatedTotalPages) {
-      setCurrentPage(pageNumber);
-    }
-  };
   return {
     isSidebarOpen,
     isAddModalOpen,
@@ -440,29 +305,20 @@ const useSchedule = () => {
     loading,
     addModalError,
     editModalError,
+
     toggleSidebar,
     openAddModal,
     closeAddModal,
     addSchedule,
+
     openEditModal,
     closeEditModal,
     handleInputChange,
     handleUpdateSchedule,
+
     openDeleteModal,
     closeDeleteModal,
     confirmDelete,
-
-    // Pagination and search
-    totalFilteredEntries,
-    searchTerm,
-    handleSearchChange,
-    currentPage,
-    entriesPerPage,
-    calculatedTotalPages,
-    handleNextPage,
-    handlePreviousPage,
-    handlePageChange,
-    handleEntriesPerPageChange,
   };
 };
 

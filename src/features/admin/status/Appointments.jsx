@@ -6,72 +6,9 @@ import Sidebar from "/src/components/Sidebar";
 import { FaSearch } from "react-icons/fa";
 import { BsTrash3 } from "react-icons/bs";
 import { Tooltip } from "react-tooltip";
-import SuccessModal from "../../../components/SuccessModal";
 import useAppointment from "./hooks/useAppointment";
 
 const Appointments = () => {
-  // Helper function to format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  // Helper function to format time slot - now displays actual dynamic time slots
-  const formatTimeSlot = (timeSlot) => {
-    if (!timeSlot) return "";
-    // Return the actual time slot as stored (e.g., "8:00 AM - 11:00 AM")
-    return timeSlot;
-  };
-
-  // Custom CSS for tooltips on truncated table data
-  const tooltipStyle = `
-    /* The parent element (the <td>) needs to be the positioning context */
-    [data-tooltip] {
-      position: relative;
-    }
-    
-    /* The cursor should only change to a pointer if a tooltip exists */
-    [data-tooltip][data-tooltip]:hover {
-      cursor: pointer;
-    }
-
-    [data-tooltip]::before {
-      content: attr(data-tooltip);
-      position: absolute;
-      background: rgba(0, 0, 0, 0.85);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 4px;
-      font-size: 12px;
-      white-space: pre-line;
-      max-width: 300px;
-      width: max-content;
-      z-index: 1000;
-
-      /* Initially hidden and non-interactive */
-      opacity: 0;
-      pointer-events: none;
-
-      /* Positioning - show below the element */
-      top: 105%;
-      left: 50%;
-      transform: translateX(-50%);
-
-      /* Smooth transition */
-      transition: opacity 0.2s ease-in-out;
-    }
-
-    /* Show on hover */
-    [data-tooltip]:hover::before {
-      opacity: 1;
-    }
-  `;
-
   const {
     // Data states
     loading,
@@ -107,11 +44,6 @@ const Appointments = () => {
     openModal,
     closeModal,
 
-    // Success modal states
-    showSuccessModal,
-    successMessage,
-    setShowSuccessModal,
-
     // Status handlers
     deleteAppointment,
     approveAppointment,
@@ -129,14 +61,7 @@ const Appointments = () => {
 
   return (
     <div className="flex h-screen font-LatoRegular">
-      {/* Inject custom styles for data tooltips */}
-      <style>{tooltipStyle}</style>
-
-      <div
-        className={`${
-          isSidebarOpen ? "w-[300px]" : "w-[100px]"
-        }transition-all duration-300 z-20`}
-      >
+      <div className={`${isSidebarOpen ? "w-[300px]" : "w-[100px]"}`}>
         <Sidebar isSidebarOpen={isSidebarOpen} />
       </div>
       <div className="flex-1 overflow-y-auto">
@@ -183,11 +108,11 @@ const Appointments = () => {
                         onChange={handleFilterChange}
                         className="bg-white border-2 border-gray-300 px-2 text-gray-400 py-2"
                       >
-                        {" "}
-                        <option value="PENDING">Pending</option>
-                        <option value="APPROVED">Approved</option>
-                        <option value="REJECTED">Rejected</option>
-                        <option value="COMPLETED">Completed</option>
+                        <option value="Filter by">Filter by</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Approved">Approved</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Completed">Completed</option>
                       </select>
                     </div>
                     <div className="relative">
@@ -205,42 +130,38 @@ const Appointments = () => {
                 </div>
               </div>
               <div className="overflow-y-auto m-4 mt-8">
-                <table
-                  className="text-[15px] w-full"
-                  style={{ tableLayout: "fixed" }}
-                >
+                <table className="text-[18px] w-full">
                   <thead>
                     <tr className="bg-gray-200 text-center">
-                      <th className="border p-4 w-[12%]">STATUS</th>
-                      <th className="border p-4 w-[15%]">
+                      <th className="border p-4">STATUS</th>
+                      <th className="border p-4">
                         TRANSACTION
                         <br />
                         NUMBER
                       </th>
-                      <th className="border p-4 w-[15%]">REQUEST</th>
-                      <th className="border p-4 w-[18%]">
+                      <th className="border p-4">REQUEST</th>
+                      <th className="border p-4">
                         EMAIL <br />
                         ADDRESS
                       </th>
-                      <th className="border p-5 w-[12%]">PURPOSE</th>
-                      <th className="border p-4 w-[12%]">
+                      <th className="border p-4">
                         DATE OF
                         <br />
                         APPOINTMENT
                       </th>
-                      <th className="border p-4 w-[10%]">TIME SLOT</th>
-                      <th className="border p-4 w-[12%]">
+                      <th className="border p-4">TIME SLOT</th>
+                      <th className="border p-4">
                         DATE OF
                         <br />
                         REQUEST
                       </th>
-                      <th className="border p-4 w-[15%]">ACTIONS</th>
+                      <th className="border p-4">ACTIONS</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading && (
                       <tr>
-                        <td colSpan="9" className="text-center p-5">
+                        <td colSpan="8" className="text-center p-5">
                           Loading appointments...
                         </td>
                       </tr>
@@ -248,7 +169,7 @@ const Appointments = () => {
                     {error && (
                       <tr>
                         <td
-                          colSpan="9"
+                          colSpan="8"
                           className="text-center p-5 text-red-500"
                         >
                           Error: {error}
@@ -262,146 +183,108 @@ const Appointments = () => {
                           (currentPage - 1) * entriesPerPage,
                           currentPage * entriesPerPage
                         )
-                        .map((data) => {
-                          const isTransactionLong =
-                            data.transactionNumber?.length > 20;
-                          const isRequestLong = data.request?.length > 25;
-                          const isEmailLong = data.emailAddress?.length > 25;
-                          const isPurposeLong = data.purpose?.length > 20;
-
-                          return (
-                            <tr key={data.id} className="even:bg-gray-100">
-                              <td className="border p-4 text-center">
+                        .map((data, index) => (
+                          <tr key={data.id} className="even:bg-gray-100">
+                            <td className="border p-4 text-center">
+                              <span
+                                className={`inline-block w-[120px] text-center px-2 py-2 rounded text-white ${getStatusColor(
+                                  data.status
+                                )}`}
+                              >
+                                {data.status}
+                              </span>
+                            </td>
+                            <td className="border p-4">
+                              <div className="flex flex-col text-center">
                                 <span
-                                  className={`inline-block w-[120px] text-center px-2 py-2 rounded text-white ${getStatusColor(
+                                  className={`font-bold ${getTransactionNumberColor(
                                     data.status
                                   )}`}
                                 >
-                                  {data.status}
-                                </span>
-                              </td>
-                              <td
-                                className="border p-4 text-center"
-                                data-tooltip={
-                                  isTransactionLong
-                                    ? data.transactionNumber
-                                    : null
-                                }
-                              >
-                                <div
-                                  className={`font-bold ${getTransactionNumberColor(
-                                    data.status
-                                  )} ${isTransactionLong ? "truncate" : ""}`}
-                                >
                                   {data.transactionNumber}
-                                </div>
-                              </td>
-                              <td
-                                className="border p-4"
-                                data-tooltip={
-                                  isRequestLong ? data.request : null
-                                }
-                              >
-                                <div
-                                  className={isRequestLong ? "truncate" : ""}
-                                >
-                                  {data.request}
-                                </div>
-                              </td>
-                              <td
-                                className="border p-4"
-                                data-tooltip={
-                                  isEmailLong ? data.emailAddress : null
-                                }
-                              >
-                                <div className={isEmailLong ? "truncate" : ""}>
-                                  {data.emailAddress}
-                                </div>
-                              </td>
-                              <td
-                                className="border p-5"
-                                data-tooltip={
-                                  isPurposeLong
-                                    ? data.purpose?.replace(/(.{50})/g, "$1\n")
-                                    : null
-                                }
-                              >
-                                <div
-                                  className={isPurposeLong ? "truncate" : ""}
-                                >
-                                  {data.purpose || "No purpose specified"}
-                                </div>
-                              </td>
-                              <td className="border p-4 text-center">
-                                {formatDate(data.dateOfAppointment)}
-                              </td>
-                              <td className="border p-4 text-center">
-                                {formatTimeSlot(data.timeSlot)}
-                              </td>
-                              <td className="border p-4 text-center">
-                                {new Date(
-                                  data.dateOfRequest
-                                ).toLocaleDateString()}
-                              </td>
-                              <td className="border p-4">
-                                <div className="flex gap-2 justify-center">
-                                  {/* Action buttons using react-tooltip */}
-                                  {(data.status === "PENDING" ||
-                                    data.status === "REJECTED") && (
-                                    <div
-                                      data-tooltip-id="approve-tooltip"
-                                      data-tooltip-content="Approve"
-                                      className="bg-[#3A993D] p-2 rounded cursor-pointer hover:bg-green-700"
-                                      onClick={(e) =>
-                                        approveAppointment(data, e)
-                                      }
-                                    >
-                                      <FaThumbsUp className="text-white" />
-                                    </div>
-                                  )}
-                                  {(data.status === "PENDING" ||
-                                    data.status === "APPROVED") && (
-                                    <div
-                                      data-tooltip-id="complete-tooltip"
-                                      data-tooltip-content="Complete"
-                                      className="bg-[#354CCE] p-2 rounded cursor-pointer hover:bg-blue-700"
-                                      onClick={(e) =>
-                                        completeAppointment(data, e)
-                                      }
-                                    >
-                                      <LuCircleCheckBig className="text-white" />
-                                    </div>
-                                  )}
-                                  {(data.status === "PENDING" ||
-                                    data.status === "APPROVED") && (
-                                    <div
-                                      data-tooltip-id="reject-tooltip"
-                                      data-tooltip-content="Reject"
-                                      className="bg-[#D52121] p-2 rounded cursor-pointer hover:bg-red-700"
-                                      onClick={(e) =>
-                                        rejectAppointment(data, e)
-                                      }
-                                    >
-                                      <FaThumbsDown className="text-white transform scale-x-[-1]" />
-                                    </div>
-                                  )}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="border p-4">{data.request}</td>
+                            <td className="border p-4">{data.emailAddress}</td>
+                            <td className="border p-4">
+                              {data.dateOfAppointment}
+                            </td>
+                            <td className="border p-4">{data.timeSlot}</td>
+                            <td className="border p-4">
+                              {new Date(
+                                data.dateOfRequest
+                              ).toLocaleDateString()}
+                            </td>
+                            <td className="border p-4">
+                              <div className="flex gap-2 justify-center">
+                                {/* Approve Button - show for Pending and Rejected statuses */}
+                                {(data.status === "PENDING" ||
+                                  data.status === "REJECTED") && (
                                   <div
-                                    data-tooltip-id="delete-tooltip"
-                                    data-tooltip-content="Delete"
-                                    className="bg-[#6F6F6F] p-2 rounded cursor-pointer hover:bg-gray-700"
-                                    onClick={() => openModal(data)}
+                                    data-tooltip-id="approve-tooltip"
+                                    data-tooltip-content="Approve"
+                                    className="bg-[#3A993D] p-2 rounded cursor-pointer hover:bg-green-700"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      approveAppointment(data);
+                                    }}
                                   >
-                                    <BsTrash3 className="text-white" />
+                                    <FaThumbsUp className="text-white" />
                                   </div>
+                                )}
+
+                                {/* Complete Button - show for Pending and Approved statuses */}
+                                {(data.status === "PENDING" ||
+                                  data.status === "APPROVED") && (
+                                  <div
+                                    data-tooltip-id="complete-tooltip"
+                                    data-tooltip-content="Complete"
+                                    className="bg-[#354CCE] p-2 rounded cursor-pointer hover:bg-blue-700"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      completeAppointment(data);
+                                    }}
+                                  >
+                                    <LuCircleCheckBig className="text-white" />
+                                  </div>
+                                )}
+
+                                {/* Reject Button - show for Pending and Approved statuses */}
+                                {(data.status === "PENDING" ||
+                                  data.status === "APPROVED") && (
+                                  <div
+                                    data-tooltip-id="reject-tooltip"
+                                    data-tooltip-content="Reject"
+                                    className="bg-[#D52121] p-2 rounded cursor-pointer hover:bg-red-700"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      rejectAppointment(data);
+                                    }}
+                                  >
+                                    <FaThumbsDown className="text-white transform scale-x-[-1]" />
+                                  </div>
+                                )}
+
+                                {/* Delete Button - show for all statuses */}
+                                <div
+                                  data-tooltip-id="delete-tooltip"
+                                  data-tooltip-content="Delete"
+                                  className="bg-[#6F6F6F] p-2 rounded cursor-pointer hover:bg-gray-700"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    openModal(data);
+                                  }}
+                                >
+                                  <BsTrash3 className="text-white" />
                                 </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
                   </tbody>
                 </table>
               </div>
-              {/* Pagination */}
               {calculatedTotalPages > 0 && (
                 <div className="flex justify-between items-center mt-10 text-[18px] px-4">
                   <span className="text-[#161F55]">
@@ -410,7 +293,6 @@ const Appointments = () => {
                   </span>
                   {calculatedTotalPages > 1 && (
                     <div className="flex items-center">
-                      {/* PREVIOUS BUTTON RESTORED */}
                       <button
                         onClick={handlePreviousPage}
                         disabled={currentPage === 1}
@@ -431,7 +313,6 @@ const Appointments = () => {
                           {number}
                         </button>
                       ))}
-                      {/* NEXT BUTTON RESTORED */}
                       <button
                         onClick={handleNextPage}
                         disabled={currentPage === calculatedTotalPages}
@@ -473,20 +354,11 @@ const Appointments = () => {
             </div>
           )}
 
-          {/* Success Modal */}
-          <SuccessModal
-            show={showSuccessModal}
-            message={successMessage}
-            onClose={() => setShowSuccessModal(false)}
-          />
-
-          {/* Tooltips for Action Buttons (from react-tooltip) */}
+          {/* Tooltips */}
           <Tooltip id="approve-tooltip" />
           <Tooltip id="complete-tooltip" />
           <Tooltip id="reject-tooltip" />
           <Tooltip id="delete-tooltip" />
-          <Tooltip id="email-tooltip" />
-          <Tooltip id="purpose-tooltip" />
         </main>
       </div>
     </div>

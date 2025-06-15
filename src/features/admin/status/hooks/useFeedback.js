@@ -18,9 +18,7 @@ const useFeedback = () => {
   const fetchFeedback = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/feedback?sort=${sortOrder}`
-      );
+      const response = await fetch(`https://appointment-system-backend-n8dk.onrender.com/api/feedback?sort=${sortOrder}`);
       if (!response.ok) {
         throw new Error("Failed to fetch feedback");
       }

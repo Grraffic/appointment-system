@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { useUser } from "../../../../context/UserContext";
 
 const useAppointment = () => {
-  // Get user context for admin name
-  const { user } = useUser();
   // States for data fetching
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,17 +8,13 @@ const useAppointment = () => {
 
   // States for filtering and search
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("PENDING");
+  const [selectedFilter, setSelectedFilter] = useState("Filter by");
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
-
-  // Success modal state
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   // Sidebar state
   const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
@@ -69,29 +62,24 @@ const useAppointment = () => {
     }
   };
 
-  // ====================================================================
-  // === CORRECTED FILTERING LOGIC ======================================
-  // ====================================================================
+  // Filter appointments based on search term and status filter
   const filteredAppointments = appointments.filter((data) => {
-    // Step 1: Filter by Search Term
-    // If there's no search term, everything matches by default.
     const searchString = searchTerm.toLowerCase();
-    const matchesSearch = searchTerm
-      ? data.transactionNumber?.toLowerCase().includes(searchString) ||
-        data.request?.toLowerCase().includes(searchString) ||
-        data.emailAddress?.toLowerCase().includes(searchString) ||
-        data.purpose?.toLowerCase().includes(searchString)
-      : true;
+    const matchesSearch =
+      data.transactionNumber?.toLowerCase().includes(searchString) ||
+      data.request?.toLowerCase().includes(searchString) ||
+      data.emailAddress?.toLowerCase().includes(searchString);
 
-    // Step 2: Filter by Status
-    // If the filter is "Filter by", everything matches by default.
-    const matchesFilter =
-      selectedFilter === "Filter by"
-        ? true
-        : data.status?.toUpperCase() === selectedFilter.toUpperCase();
+    // Only apply status filter if a specific status is selected
+    if (selectedFilter === "Filter by") {
+      return matchesSearch;
+    }
 
-    // Step 3: An item is included only if it matches BOTH conditions
-    return matchesSearch && matchesFilter;
+    // Compare statuses in uppercase to ensure case-insensitive matching
+    const appointmentStatus = data.status?.toUpperCase() || "";
+    const filterStatus = selectedFilter.toUpperCase();
+
+    return matchesSearch && appointmentStatus === filterStatus;
   });
 
   // Calculate pagination values
@@ -156,7 +144,7 @@ const useAppointment = () => {
   };
 
   // Appointment status handlers
-  const deleteAppointment = async () => {
+  const deleteAppointment = () => {
     if (selectedAppointment) {
       try {
         // Add archived flag and date to the appointment
@@ -191,36 +179,6 @@ const useAppointment = () => {
         );
         localStorage.setItem("studentsData", JSON.stringify(updatedStudents));
 
-        // Create notification for archiving appointment
-        try {
-          const adminName = user?.name || "Admin";
-          const response = await fetch(
-            `${import.meta.env.VITE_API_URL}/api/notifications/create`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-              body: JSON.stringify({
-                type: "user-action",
-                userName: adminName,
-                action: "archived the appointment of",
-                reference: selectedAppointment.transactionNumber,
-                status: "ARCHIVED",
-                details: `Appointment with transaction number ${selectedAppointment.transactionNumber} has been archived`,
-                read: false,
-              }),
-            }
-          );
-
-          if (!response.ok) {
-            console.error("Failed to create archive notification");
-          }
-        } catch (notifError) {
-          console.error("Error creating archive notification:", notifError);
-        }
-
         closeModal();
       } catch (error) {
         console.error("Error deleting appointment:", error);
@@ -228,235 +186,130 @@ const useAppointment = () => {
       }
     }
   };
+
   const updateAppointmentStatus = async (appointment, newStatus) => {
     try {
-      console.log("Updating status for appointment:", {
-        transactionNumber: appointment.transactionNumber,
-        currentStatus: appointment.status,
-        newStatus: newStatus,
-        emailAddress: appointment.emailAddress,
-        name: appointment.name,
-      });
-      const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-      const url = `${API_BASE_URL}/status/status/${appointment.transactionNumber}`;
-      console.log("Request URL:", url);
-
-      let formattedAppointmentDate = appointment.dateOfAppointment;
-      if (
-        formattedAppointmentDate &&
-        formattedAppointmentDate !== "Not scheduled"
-      ) {
-        try {
-          const date = new Date(formattedAppointmentDate);
-          if (!isNaN(date.getTime())) {
-            formattedAppointmentDate = date.toISOString();
-          }
-        } catch (e) {
-          console.warn(
-            "Could not parse appointmentDate:",
-            formattedAppointmentDate
-          );
+      console.log("Updating status:", { appointment, newStatus }); // Debug log
+      const response = await fetch(
+        `https://appointment-system-backend-n8dk.onrender.com/api/status/status/${appointment.transactionNumber}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            emailAddress: appointment.emailAddress, // Make sure this is included
+            name: appointment.name, // Make sure this is included
+            appointmentDate: appointment.dateOfAppointment,
+            timeSlot: appointment.timeSlot,
+          }),
         }
-      }
-
-      const adminName = user?.name || "Admin";
-      console.log("Current user context:", user);
-      console.log("Admin name being sent:", adminName);
-
-      const requestBody = {
-        transactionNumber: appointment.transactionNumber,
-        status: newStatus,
-        emailAddress: appointment.emailAddress,
-        name: appointment.name,
-        appointmentDate: formattedAppointmentDate,
-        timeSlot: appointment.timeSlot,
-        adminName: adminName,
-      };
-
-      console.log("Request body being sent:", requestBody);
-
-      const response = await fetch(url, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-        body: JSON.stringify(requestBody),
-      });
-
-      console.log("Response status:", response.status);
-
-      const responseText = await response.text();
-      console.log("Raw response:", responseText);
+      );
+      console.log("Response:", await response.clone().json()); // Debug log
 
       if (!response.ok) {
-        let errorMessage = `Failed to update status: ${response.status} ${response.statusText}`;
-
-        try {
-          const errorData = JSON.parse(responseText);
-          errorMessage = errorData.message || errorData.error || errorMessage;
-        } catch {
-          if (!responseText.includes("<!DOCTYPE")) {
-            errorMessage = responseText;
-          }
-        }
-
-        console.error("Error details:", {
-          status: response.status,
-          statusText: response.statusText,
-          errorMessage: errorMessage,
-        });
-
-        throw new Error(errorMessage);
+        throw new Error("Failed to update status");
       }
 
-      let updatedData;
-      try {
-        updatedData = JSON.parse(responseText);
-      } catch (_parseError) {
-        console.error("Error parsing success response:", _parseError);
-        updatedData = { status: newStatus };
-      }
+
+      // Update the local state
       setAppointments((prevAppointments) =>
         prevAppointments.map((appt) =>
           appt.transactionNumber === appointment.transactionNumber
-            ? {
-                ...appt,
-                status: updatedData?.status || newStatus,
-                dateOfAppointment:
-                  updatedData?.appointmentDate || appt.dateOfAppointment,
-                timeSlot: updatedData?.timeSlot || appt.timeSlot,
-              }
+            ? { ...appt, status: newStatus }
             : appt
         )
       );
-
-      console.log("Status updated successfully:", {
-        transactionNumber: appointment.transactionNumber,
-        newStatus: updatedData?.status || newStatus,
-      });
-
-      const statusMessages = {
-        APPROVED: "Appointment approved successfully!",
-        REJECTED: "Appointment rejected successfully!",
-        COMPLETED: "Appointment completed successfully!",
-      };
-
-      setSuccessMessage(
-        statusMessages[newStatus] || "Status updated successfully!"
-      );
-      setShowSuccessModal(true);
-
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 3000);
-
-      window.dispatchEvent(
-        new CustomEvent("appointmentStatusUpdated", {
-          detail: {
-            transactionNumber: appointment.transactionNumber,
-            newStatus: updatedData?.status || newStatus,
-            appointmentDate: appointment.dateOfAppointment,
-            timeSlot: appointment.timeSlot,
-          },
-        })
-      );
-
-      localStorage.setItem("appointmentStatusUpdated", Date.now().toString());
     } catch (error) {
       console.error("Error updating status:", error);
       setError(error.message);
     }
   };
 
-  const approveAppointment = (appointment, event) => {
+  const approveAppointment = (appointment) => {
     event?.preventDefault();
     updateAppointmentStatus(appointment, "APPROVED");
   };
 
-  const rejectAppointment = (appointment, event) => {
+  const rejectAppointment = (appointment) => {
     event?.preventDefault();
     updateAppointmentStatus(appointment, "REJECTED");
   };
 
-  const completeAppointment = (appointment, event) => {
+  const completeAppointment = (appointment) => {
     event?.preventDefault();
     updateAppointmentStatus(appointment, "COMPLETED");
   };
 
   // Fetch data
   useEffect(() => {
-    const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`;
-
     const fetchAppointments = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // 1. Fetch student records (document requests)
+        // Fetch student records first
         const studentsResponse = await fetch(
-          `${API_BASE_URL}/document-requests/docs-with-details`,
-          { headers: { Accept: "application/json" } }
+          `https://appointment-system-backend-n8dk.onrender.com/api/document-requests/docs-with-details`
         );
         if (!studentsResponse.ok) {
-          throw new Error(
-            `Failed to fetch student details: ${studentsResponse.status}`
-          );
-        }
-        const studentsData = await studentsResponse.json();
-        if (!Array.isArray(studentsData)) {
-          throw new Error("Invalid response format: expected an array");
-        }
-
-        // 2. Fetch all appointment statuses
-        const statusResponse = await fetch(`${API_BASE_URL}/status`, {
-          headers: { Accept: "application/json" },
-        });
-        if (!statusResponse.ok) {
-          throw new Error(`Failed to fetch statuses: ${statusResponse.status}`);
-        }
-        const statusData = await statusResponse.json();
-
-        // 3. Remove duplicates and sort status data
-        const uniqueStatusData = [];
-        const seenEmails = new Set();
-
-        const sortedStatusData = [...statusData].sort((a, b) => {
-          const aIsTR =
-            a.transactionNumber && a.transactionNumber.startsWith("TR");
-          const bIsTR =
-            b.transactionNumber && b.transactionNumber.startsWith("TR");
-
-          if (aIsTR && !bIsTR) return -1;
-          if (!aIsTR && bIsTR) return 1;
-
-          const dateA = new Date(a.dateOfRequest || 0);
-          const dateB = new Date(b.dateOfRequest || 0);
-          return dateB - dateA;
-        });
-
-        sortedStatusData.forEach((status) => {
-          const email = status.emailAddress;
-          if (email && !seenEmails.has(email)) {
-            uniqueStatusData.push(status);
-            seenEmails.add(email);
+          let errorMessage = `HTTP error! status: ${studentsResponse.status}`;
+          try {
+            const errorData = await studentsResponse.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            console.warn("Could not parse error response:", jsonError);
           }
-        });
+          throw new Error(errorMessage);
+        }
 
-        console.log(
-          `Removed ${
-            statusData.length - uniqueStatusData.length
-          } duplicate status entries`
+        let studentsData;
+        try {
+          studentsData = await studentsResponse.json();
+          if (!Array.isArray(studentsData)) {
+            throw new Error("Invalid response format: expected an array");
+          }
+        } catch (jsonError) {
+          console.error("Error parsing students data:", jsonError);
+          throw new Error("Failed to parse students data");
+        }
+
+        // Fetch all appointment statuses
+        const statusResponse = await fetch(
+          `https://appointment-system-backend-n8dk.onrender.com/api/status`
         );
+        if (!statusResponse.ok) {
+          let errorMessage = `HTTP error! status: ${statusResponse.status}`;
+          try {
+            const errorData = await statusResponse.json();
+            errorMessage = errorData.message || errorMessage;
+          } catch (jsonError) {
+            console.warn("Could not parse error response:", jsonError);
+          }
+          throw new Error(errorMessage);
+        }
 
-        const statusMap = uniqueStatusData.reduce((acc, curr) => {
+        let statusData;
+        try {
+          statusData = await statusResponse.json();
+          if (!Array.isArray(statusData)) {
+            throw new Error("Invalid response format: expected an array");
+          }
+        } catch (jsonError) {
+          console.error("Error parsing status data:", jsonError);
+          throw new Error("Failed to parse status data");
+        }
+
+        // Create a map of transaction numbers to their status
+        const statusMap = statusData.reduce((acc, curr) => {
           if (curr && curr.transactionNumber) {
             acc[curr.transactionNumber] = curr;
           }
           return acc;
         }, {});
 
-        // 4. Get archived appointments from localStorage to filter them out
+        // Get archived appointments from localStorage
         const archivedAppointments = JSON.parse(
           localStorage.getItem("archivedAppointments") || "[]"
         );
@@ -464,59 +317,35 @@ const useAppointment = () => {
           archivedAppointments.map((appt) => appt.id)
         );
 
-        // 5. Transform, merge, and SORT the data
+        // Transform student records and merge with status info, excluding archived appointments
         const transformedAppointments = studentsData
           .filter(
             (student) =>
               student &&
               student.transactionNumber &&
-              !archivedIds.has(student.transactionNumber)
+              !archivedIds.has(student.transactionNumber) // Filter out archived appointments
           )
           .map((student) => {
             const statusInfo = statusMap[student.transactionNumber] || {};
-            const validStatuses = [
-              "PENDING",
-              "APPROVED",
-              "REJECTED",
-              "COMPLETED",
-            ];
-            const normalizedStatus = (
-              statusInfo.status || "PENDING"
-            ).toUpperCase();
-            const status = validStatuses.includes(normalizedStatus)
-              ? normalizedStatus
-              : "PENDING";
 
             return {
               id: student.transactionNumber,
-              status: status,
+              status: statusInfo.status || "PENDING",
               transactionNumber: student.transactionNumber,
               request: student.request || "No request specified",
-              purpose:
-                student.purpose ||
-                (student.documentRequest &&
-                Array.isArray(student.documentRequest.purpose)
-                  ? student.documentRequest.purpose.join(", ")
-                  : student.documentRequest?.purpose) ||
-                "No purpose specified",
               emailAddress: student.email || "No email specified",
-              dateOfAppointment: statusInfo.appointmentDate || "Not scheduled",
-              timeSlot: statusInfo.timeSlot || "Not scheduled",
-              // This is the key field for sorting by submission time
+              dateOfAppointment: student.appointmentDate || "Not scheduled",
+              timeSlot: student.timeSlot || "Not scheduled",
               dateOfRequest:
                 student.date || new Date().toISOString().split("T")[0],
+              // Keep additional fields from Students for reference
               name: student.name,
               lastSY: student.lastSY,
               program: student.program,
               contact: student.contact,
               attachment: student.attachment,
             };
-          })
-          // --- THIS IS THE NEW LINE OF CODE ---
-          // 6. Sort by request date in descending order (newest first)
-          .sort(
-            (a, b) => new Date(b.dateOfRequest) - new Date(a.dateOfRequest)
-          );
+          });
 
         setAppointments(transformedAppointments);
       } catch (err) {
@@ -528,6 +357,11 @@ const useAppointment = () => {
     };
 
     fetchAppointments();
+
+    // Set up auto-refresh every 30 seconds
+    const refreshInterval = setInterval(fetchAppointments, 30000);
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   return {
@@ -565,11 +399,6 @@ const useAppointment = () => {
     selectedAppointment,
     openModal,
     closeModal,
-
-    // Success modal states
-    showSuccessModal,
-    successMessage,
-    setShowSuccessModal,
 
     // Status handlers
     deleteAppointment,
