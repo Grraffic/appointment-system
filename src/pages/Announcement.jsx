@@ -21,53 +21,14 @@ const Announcement = () => {
     );
   };
 
-  const facebookEmbed = () => {
+  const mobile = () => {
     return (
-      <div className="absolute top-[300px] right-[80px] w-[420px] z-20">
-        {/* Mobile Phone Frame */}
-        <div className="relative bg-gray-900 rounded-[35px] p-3 shadow-2xl">
-          {/* Phone Screen */}
-          <div className="bg-black rounded-[25px] p-1">
-            <div className="rounded-[20px] overflow-hidden h-[650px] relative">
-              {/* Status Bar - Floating over Facebook content */}
-              <div className="bg-black text-white text-xs px-4 py-2 flex justify-between items-center absolute top-0 left-0 right-0 z-10"></div>
-              <div className="bg-black text-white text-xs px-4 py-2 flex justify-between items-center absolute top-0 left-0 right-0 z-10">
-                <span className="font-semibold">9:41</span>
-                <div className="flex items-center space-x-1">
-                  <div className="w-4 h-2 border border-white rounded-sm">
-                    <div className="w-3 h-1 bg-white rounded-sm m-0.5"></div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Facebook Embed - Full Screen */}
-              <div className="w-full h-full relative overflow-hidden bg-white">
-                <iframe
-                  src="https://www.facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Flvcc.apalit&tabs=timeline&width=400&height=650&small_header=true&adapt_container_width=true&hide_cover=true&show_facepile=false&appId"
-                  width="400"
-                  height="650"
-                  style={{
-                    border: "none",
-                    overflow: "hidden",
-                    position: "absolute",
-                    top: "-20px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    width: "100%",
-                    maxWidth: "420px",
-                    height: "650px",
-                  }}
-                  scrolling="no"
-                  frameBorder="0"
-                  allowFullScreen={true}
-                  allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                  title="Facebook Page"
-                  className="w-full h-full rounded-[20px]"
-                ></iframe>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="absolute top-[130px] right-0 w-[1500px] z-20 pl-[900px] pointer-events-none">
+        <img
+          src="/assets/image/mobile.png"
+          alt="mobile icon"
+          className="w-full object-contain"
+        />
       </div>
     );
   };
@@ -151,7 +112,8 @@ const Announcement = () => {
               </p>
             </div>
           </div>
-          <div>{facebookEmbed()}</div>
+
+          <div>{mobile()}</div>
         </div>
 
         {/* Second Section */}
