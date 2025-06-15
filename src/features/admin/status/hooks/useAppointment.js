@@ -62,24 +62,26 @@ const useAppointment = () => {
     }
   };
 
-  // Filter appointments based on search term and status filter
+  // Filter appointments - CLEAN APPROACH
   const filteredAppointments = appointments.filter((data) => {
-    const searchString = searchTerm.toLowerCase();
-    const matchesSearch =
-      data.transactionNumber?.toLowerCase().includes(searchString) ||
-      data.request?.toLowerCase().includes(searchString) ||
-      data.emailAddress?.toLowerCase().includes(searchString);
+    // Debug logging
+    console.log("Filtering appointment:", {
+      transactionNumber: data.transactionNumber,
+      actualStatus: data.status,
+      selectedFilter: selectedFilter,
+      shouldShow:
+        selectedFilter === "Filter by"
+          ? true
+          : data.status === selectedFilter.toUpperCase(),
+    });
 
-    // Only apply status filter if a specific status is selected
+    // If "Filter by" is selected, show all appointments
     if (selectedFilter === "Filter by") {
-      return matchesSearch;
+      return true;
     }
 
-    // Compare statuses in uppercase to ensure case-insensitive matching
-    const appointmentStatus = data.status?.toUpperCase() || "";
-    const filterStatus = selectedFilter.toUpperCase();
-
-    return matchesSearch && appointmentStatus === filterStatus;
+    // For specific status selection, match exactly
+    return data.status === selectedFilter.toUpperCase();
   });
 
   // Calculate pagination values
@@ -417,10 +419,11 @@ const useAppointment = () => {
           )
           .map((student) => {
             const statusInfo = statusMap[student.transactionNumber] || {};
+            const finalStatus = statusInfo.status || "PENDING";
 
             return {
               id: student.transactionNumber,
-              status: statusInfo.status || "PENDING",
+              status: finalStatus,
               transactionNumber: student.transactionNumber,
               request: student.request || "No request specified",
               emailAddress: student.email || "No email specified",
