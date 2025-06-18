@@ -53,6 +53,8 @@ Create a system that will cater the students/parents/visitors walk-in/face-to-fa
 
 ---
 
+![Documentation](/public/assets/image/UATdocu.jpg)
+
 ## 🛠️ Project Team
 
 <div align="center">
